@@ -17,10 +17,19 @@
             <script src="{{ js }}"></script>
         {% endfor %}
     {% endif %}
+    <script type="text/javascript">
+	function fresh(){
+	    try{
+	        document.getElementById('rv').click();
+	    }
+	    catch{
 
+	    }
+	}
+    </script>
     <title>EnglishPal Study Room for {{ username }}</title>
 </head>
-<body>
+<body onload="fresh()">
 <div class="container-fluid">
     <p><b>English Pal for <font id="username" color="red">{{ username }}</font></b>
         <a class="btn btn-secondary" href="/logout" role="button">退出</a>
@@ -29,6 +38,11 @@
     {{ flashed_messages|safe }}
 
     <a class="btn btn-success" href="/{{ username }}/reset" role="button"> 下一篇 Next Article </a>    
+    {% if session.get('articleID') == session.get('old_articleID') %}
+        {% if session.get('old_articleID') != None %}
+            <a class="btn btn-success" href="/{{ username }}/reset" role="button" id="rv"> 出bug了 </a>
+        {% endif%}
+    {% endif %}
     {% if session.get('articleID') != session.get('old_articleID') %}
         {% if session.get('old_articleID') != None %}
             <a class="btn btn-success" href="/{{ username }}/back" role="button"> 上一篇 Previous Article </a>
