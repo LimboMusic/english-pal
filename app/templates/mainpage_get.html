@@ -23,9 +23,9 @@
     <div class="container-fluid">
         <p><b><font size="+3" color="red">English Pal - Learn English smartly!</font></b></p>
         {% if session['logged_in'] %}
-            <a href="/{{session['username']}}">{{session['username']}}</a></p>
+            <a href="/{{session['username']}}">{{session['username']}}</a> <a href="/admin">管理</a></p>
         {% else %}
-            <p><a href="/login">登录</a>  <a href="/signup">注册</a> <a href="/static/usr/instructions.html">使用说明</a></p >
+            <p><a href="/admin">管理</a> <a href="/login">登录</a>  <a href="/signup">注册</a> <a href="/static/usr/instructions.html">使用说明</a></p >
             <p><b>{{random_ads|safe}}</b></p>
         {% endif %}
         <div class="alert alert-success" role="alert">共有文章 <span class="badge bg-success"> {{number_of_essays}} </span> 篇</div>
