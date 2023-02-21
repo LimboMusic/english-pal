@@ -17,18 +17,21 @@
             <script src="{{ js }}"></script>
         {% endfor %}
     {% endif %}
-    <script type="text/javascript">
-	function fresh(){
-	    try{
-	        document.getElementById('rv').click();
-	    }
-	    catch{
 
-	    }
-	}
+{#     // add !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  #}
+    <script type="text/javascript">
+        function fresh() {
+            try {
+                document.getElementById('rv').click();
+            } catch {
+
+            }
+        }
     </script>
+{#     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! #}
     <title>EnglishPal Study Room for {{ username }}</title>
 </head>
+{#   original code: <body>  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! #}
 <body onload="fresh()">
 <div class="container-fluid">
     <p><b>English Pal for <font id="username" color="red">{{ username }}</font></b>
@@ -37,17 +40,19 @@
     </p>
     {{ flashed_messages|safe }}
 
-    <a class="btn btn-success" href="/{{ username }}/reset" role="button"> 下一篇 Next Article </a>    
+    <a class="btn btn-success" href="/{{ username }}/reset" role="button"> 下一篇 Next Article </a>
+{#  add code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  #}
     {% if session.get('articleID') == session.get('old_articleID') %}
         {% if session.get('old_articleID') != None %}
             <a class="btn btn-success" href="/{{ username }}/reset" role="button" id="rv"> 出bug了 </a>
-        {% endif%}
+        {% endif %}
     {% endif %}
     {% if session.get('articleID') != session.get('old_articleID') %}
         {% if session.get('old_articleID') != None %}
             <a class="btn btn-success" href="/{{ username }}/back" role="button"> 上一篇 Previous Article </a>
-        {% endif%}
+        {% endif %}
     {% endif %}
+{# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  #}
 
     <p><b>阅读文章并回答问题</b></p>
     <div id="text-content">{{ today_article|safe }}</div>
@@ -60,9 +65,9 @@
             <div class="sliderValue">
                 <span id="rangeValue">1×</span>
             </div>
-        <input type="range" id="rangeComponent" min="0.5" max="2" value="1" step="0.25" "/>
+            <input type="range" id="rangeComponent" min="0.5" max="2" value="1" step="0.25" "/>
         </div>
-    </div>    
+    </div>
     <p><b>收集生词吧</b> （可以在正文中划词，也可以复制黏贴）</p>
     <form method="post" action="/{{ username }}">
         <textarea name="content" id="selected-words" rows="10" cols="120"></textarea><br/>
@@ -88,8 +93,9 @@
             {% if session.get('thisWord') == x[0] and session.get('time') == 1 %}
                 <a name="aaa"></a>
             {% endif %}
-            <p id='p_{{ word }}' class="new-word" >
-                <a id="word_{{ word }}"  class="btn btn-light" href='http://youdao.com/w/eng/{{ word }}/#keyfrom=dict2.index'
+            <p id='p_{{ word }}' class="new-word">
+                <a id="word_{{ word }}" class="btn btn-light"
+                   href='http://youdao.com/w/eng/{{ word }}/#keyfrom=dict2.index'
                    role="button">{{ word }}</a>
                 ( <a id="freq_{{ word }}" title="{{ word }}">{{ freq }}</a> )
                 <a class="btn btn-success" onclick="familiar('{{ word }}')" role="button">熟悉</a>
@@ -109,9 +115,9 @@
 </body>
 <style>
     mark {
-    color: #{{ yml['highlight']['color'] }};
-    background-color: rgba(0,0,0,0);
-}
+        color: #{{ yml['highlight']['color'] }};
+        background-color: rgba(0, 0, 0, 0);
+    }
 </style>
 
 </html>
