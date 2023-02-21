@@ -11,15 +11,14 @@ Hui Lan <hui.lan@cantab.net>
 
 
 EnglishPal allows the user to build his list of new English words
-picked from articles selected for him according his vocabulary level.
+picked from articles selected for him to read according his vocabulary level.  EnglishPal will determine a user's vocabulary level based on his picked words.  After that, it will recommend articles for him to read, in order to booster his English vocabulary furthermore.
 
 
-## Run it on a local machine
-
+## Run on your own laptop
 
 `python3 main.py`
 
-Make sure you have the SQLite database file in `app/static` (see below).
+Make sure you have put the SQLite database file in the path `app/static` (see below).
 
 
 ## Run it as a Docker container
@@ -29,32 +28,32 @@ Assuming that docker has been installed and that you are a sudo user (i.e., sudo
 
 `sudo ./build.sh`
 
-Open your favourite Internet browser and enter this URL address: `http://ip-address:90`.
+Open your favourite Internet browser and enter this URL address: `http://ip-address:90`.  Note: you must update the variable `DEPLOYMENT_DIR` in `build.sh`.
 
 ### Explanation on the commands in build.sh
 
-My steps for deploying English on the server.
+My steps for deploying English on a Ubuntu server.
 
 - ssh to ubuntu@118.*.*.118
 
-- cd to /home/lanhui/englishpal2/EnglishPal
+- cd to `/home/lanhui/englishpal2/EnglishPal`
 
 - Stop all docker service: `sudo service docker restart`.  If you know the docker container ID, then the above command is an overkill.  Use the following command instead: `sudo docker stop ContainerID`.  You could get all container IDs with the following command: `sudo docker ps`
 
-- Rebuild container. Run the following command to rebuild a docker image after the code gets updated: `sudo docker build -t englishpal .`
+- Rebuild container. Run the following command to rebuild a docker image each time after the source code gets updated: `sudo docker build -t englishpal .`
 
-- Run the application: `sudo docker run -d -p 90:80 -v /home/lanhui/englishpal2/EnglishPal/app/static/frequency:/app/static/frequency -t englishpal`. If you use `sudo docker run -d -p 90:80 -t englishpal`, data will be lost after terminating the program.
+- Run the application: `sudo docker run -d -p 90:80 -v /home/lanhui/englishpal2/EnglishPal/app/static/frequency:/app/static/frequency -t englishpal`. If you use `sudo docker run -d -p 90:80 -t englishpal`, data will be lost after terminating the program.  If you want to automatically restart the docker image after each system reboot, add the option `--restart=always` after `docker run`.
 
-- Save space: `sudo docker system prune -a -f`
+- Save disk space: `sudo docker system prune -a -f`
+
+`build.sh` contains all the above commands.  Run "sudo ./build.sh" to rebuild and start the web application.
 
 
-### Other useful docker commands
+#### Other useful docker commands
 
 - `sudo docker ps -a`
 
-- `sudo docker logs image_name`, where image_name could be obtained from `sudo docker ps`.
-
-`build.sh` contains all the above commands.  Run "sudo ./build.sh" to rebuild and run the web application.
+- `sudo docker logs image_name`, where `image_name` could be obtained from `sudo docker ps`.
 
 
 
@@ -67,6 +66,10 @@ All articles are stored in the `article` table in a SQLite file called
 ### Adding new articles
 
 To add articles, open and edit `app/static/wordfreqapp.db` using DB Browser for SQLite (https://sqlitebrowser.org).
+
+### Extending an account's expiry date
+
+By default, an account's expiry is 30 days after first sign-up.  To extend account's expiry date, open and edit `user` table in `app/static/wordfreqapp.db`.  Simply update field `expiry_date`.
 
 ### Exporting the database
 
@@ -92,33 +95,31 @@ sqlite3 wordfreqapp.db`.  Delete wordfreqapp.db first if it exists.
 ### Uploading wordfreqapp.db to the server
 
 
-`pscp wordfreqapp.db lanhui@118.*.*.118:/home/lanhui/englishpal/app/static`
+`pscp wordfreqapp.db lanhui@118.*.*.118:/home/lanhui/englishpal2/EnglishPal/app/static`
 
 
 
 ## Feedback
 
-We welcome feedback on EnglishPal.
+We welcome feedback on EnglishPal.  Feedback examples:
 
-### Respondent 1
+### Feedback 1
 
-
-"Need a phone app.  I use phone a lot.  You cannot ask students to use computers."
-
-Can take a picture for text.  Automatic translation.
-
-### Respondent 2
+- "Need a phone app.  I use phone a lot.  You cannot ask students to use computers."
 
 
-“成为会员”改成“注册”
+### Feedback 2
 
-“登出”改成“退出”
 
-“收集生词吧”改成“生词收集栏”
+- “成为会员”改成“注册”
 
-“不要自动显示下一篇”
+- “登出”改成“退出”
 
-需要有“上一篇”、“下一篇”
+- “收集生词吧”改成“生词收集栏”
+
+- 不要自动显示下一篇
+
+- 需要有“上一篇”、“下一篇”按钮。
 
 
 
@@ -137,7 +138,7 @@ EnglishPal's bugs and improvement suggestions are recorded in [Bugzilla](http://
 - Usability testing
 
 
-## Improvements made by contributors
+## Improvements made by contributors (incomplete list)
 
 
 ### 朱文绮
@@ -159,7 +160,6 @@ too many words that they already know, on the other hand, it can
 reduce unnecessary memory occupied by the database, in addition, it
 can also improve the simplicity of the page.
 
-More information at: http://118.25.96.118/kanboard/?controller=TaskViewController&action=readonly&task_id=736&token=81a561da57ff7a172da17a480f0d421ff3bc69efbd29437daef90b1b8959
 
 
 ### 占健豪
@@ -180,4 +180,17 @@ Demo video link: https://b23.tv/QuB77m
 
 Bug report: http://118.25.96.118/bugzilla/show_bug.cgi?id=215
 
-*Last modified on 2021-10-17*
+
+
+
+### 丁锐
+
+修复了以下漏洞
+
+漏洞：新用户在创建账号时，不需要输入确定密码也可以注册成功，并且新账户可以正常使用。
+
+Bug report: http://118.25.96.118/bugzilla/show_bug.cgi?id=489
+
+
+*Last modified on 2023-01-30*
+

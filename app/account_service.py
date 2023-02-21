@@ -5,7 +5,6 @@ from Login import check_username_availability, verify_user, add_user, get_expiry
 # 初始化蓝图
 accountService = Blueprint("accountService", __name__)
 
-
 ### Sign-up, login, logout ###
 @accountService.route("/signup", methods=['GET', 'POST'])
 def signup():
@@ -20,6 +19,7 @@ def signup():
         # POST方法需判断是否注册成功，再根据结果返回不同的内容
         username = escape(request.form['username'])
         password = escape(request.form['password'])
+        password2 = escape(request.form['password2'])
         
         #! 添加如下代码为了过滤注册时的非法字符
         warn = WarningMessage(username)
@@ -32,6 +32,8 @@ def signup():
             return render_template('signup.html')
         elif len(password.strip()) < 4: # 密码过短
             return '密码过于简单。'
+        elif password != password2:
+            return '确认密码与输入密码不一致！'
         else: # 添加账户信息
             add_user(username, password)
             verified = verify_user(username, password)
@@ -46,6 +48,7 @@ def signup():
                 <p><a href="/%s">开始使用</a> <a href="/">返回首页</a><p/>' % (username, username, username)
             else:
                 return '用户名密码验证失败。'
+
 
 
 @accountService.route("/login", methods=['GET', 'POST'])

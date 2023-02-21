@@ -62,3 +62,7 @@ function onReadClick() {
 function onChooseClick() {
     isChoose = !isChoose;
 }
+
+function stopRead() {
+    reader.cancel();
+}

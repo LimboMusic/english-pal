@@ -30,6 +30,20 @@
     </script>
 {#     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! #}
     <title>EnglishPal Study Room for {{ username }}</title>
+
+    <style>
+        .shaking {
+            animation: shakes 1600ms ease-in-out;
+        }
+
+        @keyframes shakes {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 50% { transform: translate3d(+2px, 0, 0); }
+            30%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(+4px, 0, 0); }
+            50% { transform: translate3d(-4px, 0, 0); }
+        }
+    </style>
 </head>
 {#   original code: <body>  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! #}
 <body onload="fresh()">
@@ -65,7 +79,7 @@
             <div class="sliderValue">
                 <span id="rangeValue">1×</span>
             </div>
-            <input type="range" id="rangeComponent" min="0.5" max="2" value="1" step="0.25" "/>
+            <input type="range" id="rangeComponent" min="0.5" max="2" value="1" step="0.25"/>
         </div>
     </div>
     <p><b>收集生词吧</b> （可以在正文中划词，也可以复制黏贴）</p>
@@ -86,23 +100,30 @@
     {% endif %}
 
     {% if d_len > 0 %}
-        <p><b>我的生词簿</b></p>
-        {% for x in lst3 %}
-            {% set word = x[0] %}
-            {% set freq = x[1] %}
-            {% if session.get('thisWord') == x[0] and session.get('time') == 1 %}
-                <a name="aaa"></a>
-            {% endif %}
-            <p id='p_{{ word }}' class="new-word">
-                <a id="word_{{ word }}" class="btn btn-light"
-                   href='http://youdao.com/w/eng/{{ word }}/#keyfrom=dict2.index'
-                   role="button">{{ word }}</a>
-                ( <a id="freq_{{ word }}" title="{{ word }}">{{ freq }}</a> )
-                <a class="btn btn-success" onclick="familiar('{{ word }}')" role="button">熟悉</a>
-                <a class="btn btn-warning" onclick="unfamiliar('{{ word }}')" role="button">不熟悉</a>
-                <a class="btn btn-danger" onclick="delete_word('{{ word }}')" role="button">删除</a>
-            </p>
-        {% endfor %}
+        <p>
+            <b>我的生词簿</b> 
+            <label for="move_dynamiclly">
+                <input type="checkbox" name="move_dynamiclly" id="move_dynamiclly" checked>
+                允许动态调整顺序
+            </label>
+        </p>
+        <a name="aaa"></a>
+        <div class="word-container">
+            {% for x in lst3 %}
+                {% set word = x[0] %}
+                {% set freq = x[1] %}
+                {% if session.get('thisWord') == x[0] and session.get('time') == 1 %}
+                {% endif %}
+                <p id='p_{{ word }}' class="new-word" >
+                    <a id="word_{{ word }}"  class="btn btn-light" href='http://youdao.com/w/eng/{{ word }}/#keyfrom=dict2.index'
+                    role="button">{{ word }}</a>
+                    ( <a id="freq_{{ word }}" title="{{ word }}">{{ freq }}</a> )
+                    <a class="btn btn-success" onclick="familiar('{{ word }}')" role="button">熟悉</a>
+                    <a class="btn btn-warning" onclick="unfamiliar('{{ word }}')" role="button">不熟悉</a>
+                    <a class="btn btn-danger" onclick="delete_word('{{ word }}')" role="button">删除</a>
+                </p>
+            {% endfor %}
+        </div>
         <input id="selected-words2" type="hidden" value="{{ words }}">
     {% endif %}
 </div>
