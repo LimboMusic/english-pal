@@ -26,7 +26,7 @@
             <a href="/{{session['username']}}">{{session['username']}}</a></p>
         {% else %}
             <p><a href="/login">登录</a>  <a href="/signup">注册</a> <a href="/static/usr/instructions.html">使用说明</a></p >
-            <p><b>{{random_ads|safe}}</b></p>
+            <p><b> {{ random_ads }}。 <a href="/signup">试试</a>吧！</b></p>
         {% endif %}
         <div class="alert alert-success" role="alert">共有文章 <span class="badge bg-success"> {{number_of_essays}} </span> 篇</div>
         <p>粘贴1篇文章 (English only)</p>

@@ -18,17 +18,6 @@
         {% endfor %}
     {% endif %}
 
-{#     // add !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  #}
-    <script type="text/javascript">
-        function fresh() {
-            try {
-                document.getElementById('rv').click();
-            } catch {
-
-            }
-        }
-    </script>
-{#     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! #}
     <title>EnglishPal Study Room for {{ username }}</title>
 
     <style>
@@ -45,31 +34,49 @@
         }
     </style>
 </head>
-{#   original code: <body>  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! #}
-<body onload="fresh()">
+<body>
 <div class="container-fluid">
     <p><b>English Pal for <font id="username" color="red">{{ username }}</font></b>
         <a class="btn btn-secondary" href="/logout" role="button">退出</a>
         <a class="btn btn-secondary" href="/reset" role="button">重设密码</a>
     </p>
-    {{ flashed_messages|safe }}
+    {% for message in messages %}
+        <div class="alert alert-warning" role="alert">Congratulations! {{ message }}</div>
+    {% endfor %}
 
     <a class="btn btn-success" href="/{{ username }}/reset" role="button"> 下一篇 Next Article </a>
-{#  add code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  #}
-    {% if session.get('articleID') == session.get('old_articleID') %}
-        {% if session.get('old_articleID') != None %}
-            <a class="btn btn-success" href="/{{ username }}/reset" role="button" id="rv"> 出bug了 </a>
-        {% endif %}
+    {% if session.get('existing_articles')[0] != None and session.get('existing_articles')[0] !=0 %}
+        <a class="btn btn-success" href="/{{ username }}/back" role="button"> 上一篇 Previous Article </a>
     {% endif %}
-    {% if session.get('articleID') != session.get('old_articleID') %}
-        {% if session.get('old_articleID') != None %}
-            <a class="btn btn-success" href="/{{ username }}/back" role="button"> 上一篇 Previous Article </a>
-        {% endif %}
-    {% endif %}
-{# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  #}
 
     <p><b>阅读文章并回答问题</b></p>
-    <div id="text-content">{{ today_article|safe }}</div>
+    <div id="text-content">
+        {% if today_article %}
+            <div class="alert alert-success" role="alert">According to your word list, your level is <span class="badge bg-success">{{ today_article["user_level"] }}</span>  and we have chosen an article with a difficulty level of <span class="badge bg-success">{{ today_article["text_level"] }}</span> for you.</div>
+                <p class="text-muted">Article added on: {{ today_article["date"] }}</p><br/>
+            <div class="p-3 mb-2 bg-light text-dark"><br/>
+            <p class="display-5">{{ today_article["article_title"] }}</p><br/>
+            <p class="lead"><font id="article" size=2>{{ today_article["article_body"] }}</font></p><br/>
+            <p><small class="text-muted">{{ today_article['source'] }}</small></p><br/>
+            <p><b>{{ today_article['question'] }}</b></p><br/>
+                <script type="text/javascript">
+                    function toggle_visibility(id) { {# https://css-tricks.com/snippets/javascript/showhide-element/#}
+                        const e = document.getElementById(id);
+                        if(e.style.display === 'block')
+                            e.style.display = 'none';
+                        else
+                            e.style.display = 'block';
+                    }
+                </script>
+                <button onclick="toggle_visibility('answer');">ANSWER</button>
+                <div id="answer" style="display:none;">{{ today_article['answer'] }}</div><br/>
+            </div>
+        {% else %}
+            <div class="alert alert-success" role="alert">
+                <p class="text-muted"><span class="badge bg-success">Notes:</span><br>No article is currently available for you. You can try again a few times or mark new words in the passage to improve your level.</p>
+            </div>
+        {% endif %}
+    </div>
 
     <input type="checkbox" onclick="toggleHighlighting()" checked/>生词高亮
     <input type="checkbox" onclick="onReadClick()" checked/>大声朗读
