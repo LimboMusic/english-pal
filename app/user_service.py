@@ -107,7 +107,7 @@ def userpage(username):
     # 用户过期
     user_expiry_date = session.get('expiry_date')
     if datetime.now().strftime('%Y%m%d') > user_expiry_date:
-        return render_template('expiry.html')
+        return render_template('expiry.html', expiry_date=user_expiry_date)
 
     # 获取session里的用户名
     username = session.get('username')

@@ -1,6 +1,6 @@
 import hashlib
 import string
-from datetime import datetime
+from datetime import datetime, timedelta
 from UseSqlite import InsertQuery, RecordQuery
 
 path_prefix = '/var/www/wordfreq/wordfreq/'
@@ -23,7 +23,7 @@ def verify_user(username, password):
 
 def add_user(username, password):
     start_date = datetime.now().strftime('%Y%m%d')
-    expiry_date = '20221230'
+    expiry_date = (datetime.now() + timedelta(days=30)).strftime('%Y%m%d') # will expire after 30 days
     # 将用户名和密码一起加密，以免暴露不同用户的相同密码
     password = md5(username + password)
     rq = InsertQuery(path_prefix + 'static/wordfreqapp.db')
