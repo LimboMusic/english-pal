@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from admin_service import ADMIN_NAME
 from flask import *
 
 # from app import Yaml
@@ -131,6 +131,7 @@ def userpage(username):
         for x in lst3:
             words += x[0] + ' '
         return render_template('userpage_get.html',
+                               admin_name=ADMIN_NAME,
                                username=username,
                                session=session,
                                flashed_messages=get_flashed_messages_if_any(),
