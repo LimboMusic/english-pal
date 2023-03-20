@@ -7,7 +7,7 @@ from datetime import datetime
 
 # ? from difficulty import text_difficulty_level
 
-ADMIN_NAME = "114514"  # unique admin name
+ADMIN_NAME = "lanhui"  # unique admin name
 _cur_page = 1  # current article page
 _page_size = 5  # article sizes per page
 adminService = Blueprint("admin_service", __name__)
