@@ -5,23 +5,23 @@
 # Copyright 2019 (C) Hui Lan <hui.lan@cantab.net>
 # Written permission must be obtained from the author for commercial uses.
 ###########################################################################
-from datetime import datetime
 from flask import escape
 from Login import *
 from Article import *
 import Yaml
 from user_service import userService
 from account_service import accountService
+from admin_service import adminService
 app = Flask(__name__)
 app.secret_key = 'lunch.time!'
 
 # 将蓝图注册到Lab app
 app.register_blueprint(userService)
 app.register_blueprint(accountService)
+app.register_blueprint(adminService)
 
 path_prefix = '/var/www/wordfreq/wordfreq/'
 path_prefix = './'  # comment this line in deployment
-
 
 def get_random_image(path):
     '''
@@ -100,79 +100,6 @@ def mainpage():
         lst = sort_in_descending_order(pickle_idea.dict2lst(d))
         return render_template('mainpage_get.html', random_ads=random_ads, number_of_essays=number_of_essays,
                                d_len=d_len, lst=lst, yml=Yaml.yml)
-
-
-def insert_article(content, source='manual_input', level=5, question=''):
-    sql = f"INSERT into article (text,source, date, level, question) VALUES " \
-          f"('{content}','{source}','{datetime.now().strftime('%Y-%m-%d')}', '{level}', '{question}');"
-    print(sql)
-    rq = RecordQuery('./static/wordfreqapp.db')
-    rq.instructions(sql)
-    rq.do()
-
-
-def get_articles():
-    sql = f"SELECT * from article order by -article_id;"
-    rq = RecordQuery('./static/wordfreqapp.db')
-    rq.instructions(sql)
-    rq.do()
-    result = rq.get_results()
-    return result
-
-
-def get_users():
-    sql = f"SELECT * from user;"
-    rq = RecordQuery('./static/wordfreqapp.db')
-    rq.instructions(sql)
-    rq.do()
-    result = rq.get_results()
-    return result
-
-
-def update_user_password(username, password='123456'):
-    password = md5(username + password)
-    sql = f"UPDATE user SET password='{password}' where name='{username}';"
-    rq = RecordQuery('./static/wordfreqapp.db')
-    rq.instructions(sql)
-    rq.do()
-
-
-@app.route("/admin", methods=['GET', 'POST'])
-def admin():
-    '''
-    '''
-    # 未登录，跳转到未登录界面
-    if not session.get('logged_in'):
-        return render_template('not_login.html')
-
-    # 获取session里的用户名
-    username = session.get('username')
-
-    context = {
-        # 'user': request.user,
-        'text_list': get_articles(),
-        'user_list': get_users(),
-        'username': username
-    }
-    if request.method == 'GET':
-        return render_template('admin_index.html', **context)
-    else:
-        data = request.form
-        content = data.get('content')
-        source = data.get('source', '')
-        question = data.get('question', '')
-        username = data.get('username')
-        if content:
-            insert_article(
-                content=content,
-                source=source,
-                question=question
-            )
-            context['text_list'] = get_articles()
-        if username:
-            update_user_password(username)
-        return render_template('admin_index.html', **context)
-
 
 
 if __name__ == '__main__':
