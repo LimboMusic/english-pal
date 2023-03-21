@@ -92,7 +92,8 @@ def deleteword(username, word):
     '''
     user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
     pickle_idea2.deleteRecord(user_freq_record, word)
-    flash(f'<strong>{word}</strong> is no longer in your word list.')  # 模板 userpage_get.html 中已经没有对flash信息的获取了，就不做修改了
+    # 模板 userpage_get.html 中已经没有对flash信息的获取了，而且会影响 signup.html的显示，因为其中去获取了flash。在删除单词，退出，注册，页面就会出现提示信息
+    # flash(f'<strong>{word}</strong> is no longer in your word list.')
     return "success"
 
 
