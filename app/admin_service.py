@@ -114,5 +114,5 @@ def get_users():
 
 def update_user_password(username, password="123456"):
     with db_session:
-        if user := User.select(name=username).first():
+        if if user := User.select(name=username).first():
             user.password = md5(username + password)
