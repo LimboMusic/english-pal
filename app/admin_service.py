@@ -5,8 +5,6 @@ from Yaml import yml
 from Login import md5
 from datetime import datetime
 
-# ? from difficulty import text_difficulty_level
-
 ADMIN_NAME = "lanhui"  # unique admin name
 _cur_page = 1  # current article page
 _page_size = 5  # article sizes per page
@@ -25,19 +23,19 @@ def admin():
     if username != ADMIN_NAME:
         return "You are not admin!"
 
-    article_len = get_articles_len()
+    article_number = get_number_of_articles()
     try:
-        _page_size = min(int(request.args.get("size", 5)), article_len)
+        _page_size = min(int(request.args.get("size", 5)), article_number)
         if _page_size <= 0:
             raise ZeroDivisionError
-        _cur_page = min(int(request.args.get("page", 1)), article_len // _page_size)
+        _cur_page = min(int(request.args.get("page", 1)), article_number // _page_size)
     except ValueError:
         return "page parmas must be int!"
     except ZeroDivisionError:
         return "page size must bigger than zero"
 
     context = {
-        "text_len": article_len,
+        "article_number": article_number,
         "page_size": _page_size,
         "cur_page": _cur_page,
         "text_list": get_page_articles(_cur_page, _page_size),
@@ -47,12 +45,13 @@ def admin():
     }
 
     def _update_context():
-        article_len = get_articles_len()
-        context["text_len"] = article_len
+        article_len = get_number_of_articles()
+        context["article_number"] = article_len
         context["text_list"] = get_page_articles(_cur_page, _page_size)
 
     if request.method == "GET":
-        if delete_id := int(request.args.get("delete_id", 0)):  # delete article
+        delete_id = int(request.args.get("delete_id", 0))
+        if delete_id:  # delete article
             delete_article(delete_id)
             _update_context()
     else:
@@ -61,8 +60,14 @@ def admin():
         source = data.get("source", "")
         question = data.get("question", "")
         username = data.get("username", "")
+        level = data.get("level", "5")
         if content:
-            add_article(content, source, question)
+            try:    # check level
+                if level not in [str(x + 1) for x in range(5)]:
+                    raise ValueError
+            except ValueError:
+                return "level must be between 1 and 5"
+            add_article(content, source, level, question)
             _update_context()
         if username:
             update_user_password(username)
@@ -70,31 +75,27 @@ def admin():
     return render_template("admin_index.html", **context)
 
 
-def add_article(content, source="manual_input", question="No question"):
+def add_article(content, source="manual_input", level="5", question="No question"):
     with db_session:
-        # add one atricle to sqlite
+        # add one article to sqlite
         Article(
             text=content,
             source=source,
             date=datetime.now().strftime("%-d %b %Y"),  # format style of `5 Oct 2022`
-            level="1",
+            level=level,
             question=question,
         )
-        # ? There is a question that:
-        # ? How can i get one article level?
-        # ? I try to use the function `text_difficulty_level(content,{"test":1})`
-        # ? However, i lose one dict parma from pickle
-        # ? So I temporarily fixed the level to 1
 
 
 def delete_article(article_id):
     article_id &= 0xFFFFFFFF  # max 32 bits
     with db_session:
-        if article := Article.select(article_id=article_id):
+        article = Article.select(article_id=article_id)
+        if article:
             article.first().delete()
 
 
-def get_articles_len():
+def get_number_of_articles():
     with db_session:
         return len(Article.select()[:])
 
@@ -114,5 +115,6 @@ def get_users():
 
 def update_user_password(username, password="123456"):
     with db_session:
-        if if user := User.select(name=username).first():
-            user.password = md5(username + password)
+        user = User.select(name=username)
+        if user:
+            user.first().password = md5(username + password)
