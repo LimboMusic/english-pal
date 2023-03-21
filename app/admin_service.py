@@ -110,7 +110,7 @@ def get_page_articles(num, size):
 
 def get_users():
     with db_session:
-        return User.select()[:]
+        return User.select().order_by(User.name)[:]
 
 
 def update_user_password(username, password="123456"):
