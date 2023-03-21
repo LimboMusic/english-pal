@@ -92,7 +92,7 @@ def deleteword(username, word):
     '''
     user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
     pickle_idea2.deleteRecord(user_freq_record, word)
-    flash(f'<strong>{word}</strong> is no longer in your word list.')
+    flash(f'<strong>{word}</strong> is no longer in your word list.')  # 模板 userpage_get.html 中已经没有对flash信息的获取了，就不做修改了
     return "success"
 
 
