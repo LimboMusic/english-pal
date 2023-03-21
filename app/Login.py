@@ -96,7 +96,7 @@ class UserName:
         if ' ' in self.username: # a user name must not include a whitespace
             return 'Whitespace is not allowed in the user name.'
         for c in self.username: # a user name must not include special characters, except non-leading periods or underscores
-            if c in string.punctuation and c is not '.' and c is not '_':
+            if c in string.punctuation and c != '.' and c != '_':
                 return f'{c} is not allowed in the user name.'
         if self.username in ['signup', 'login', 'logout', 'reset', 'mark', 'back', 'unfamiliar', 'familiar', 'del', "admin"]:
             return 'You used a restricted word as your user name.  Please come up with a better one.'
