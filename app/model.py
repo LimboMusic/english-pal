@@ -1,7 +1,7 @@
 from pony.orm import *
 
 db = Database()
-db.bind("sqlite", "./static/wordfreqapp.db", create_db=True)  # bind sqlit file
+db.bind("sqlite", "./static/wordfreqapp.db", create_db=True)  # bind sqlite file
 
 
 class User(db.Entity):

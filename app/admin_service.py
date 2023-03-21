@@ -50,7 +50,8 @@ def admin():
         context["text_list"] = get_page_articles(_cur_page, _page_size)
 
     if request.method == "GET":
-        if delete_id := int(request.args.get("delete_id", 0)):  # delete article
+        delete_id = int(request.args.get("delete_id", 0))
+        if delete_id:  # delete article
             delete_article(delete_id)
             _update_context()
     else:
@@ -89,7 +90,8 @@ def add_article(content, source="manual_input", level="5", question="No question
 def delete_article(article_id):
     article_id &= 0xFFFFFFFF  # max 32 bits
     with db_session:
-        if article := Article.select(article_id=article_id):
+        article = Article.select(article_id=article_id)
+        if article:
             article.first().delete()
 
 
@@ -113,5 +115,6 @@ def get_users():
 
 def update_user_password(username, password="123456"):
     with db_session:
-        if user := User.select(name=username).first():
-            user.password = md5(username + password)
+        user = User.select(name=username)
+        if user and user.first():
+            user.first().password = md5(username + password)
