@@ -62,7 +62,7 @@ def admin():
         level = data.get("level", "5")
         if content:
             try:    # check level
-                if not (0 < int(level) <= 5):
+                if level not in [str(x + 1) for x in range(5)]:
                     raise ValueError
             except ValueError:
                 return "level must be between 1 and 5"
