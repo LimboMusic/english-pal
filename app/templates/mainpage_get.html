@@ -28,7 +28,7 @@
             <a href="/admin">管理</a></p>
             {% endif %}
         {% else %}
-            <p><a href="/admin">管理</a> <a href="/login">登录</a>  <a href="/signup">注册</a> <a href="/static/usr/instructions.html">使用说明</a></p >
+            <p><a href="/login">登录</a>  <a href="/signup">注册</a> <a href="/static/usr/instructions.html">使用说明</a></p >
             <p><b>{{random_ads|safe}}</b></p>
         {% endif %}
         <div class="alert alert-success" role="alert">共有文章 <span class="badge bg-success"> {{ number_of_essays }} </span> 篇</div>
