@@ -25,14 +25,10 @@ def admin():
 
     article_number = get_number_of_articles()
     try:
-        _page_size = min(int(request.args.get("size", 5)), article_number)
-        if _page_size <= 0:
-            raise ZeroDivisionError
-        _cur_page = min(int(request.args.get("page", 1)), article_number // _page_size)
+        _page_size = min(max(1, int(request.args.get("size", 5))), article_number)  # 最小的size是1
+        _cur_page = min(max(1, int(request.args.get("page", 1))), article_number // _page_size + 1) # 最小的page是1
     except ValueError:
         return "page parmas must be int!"
-    except ZeroDivisionError:
-        return "page size must bigger than zero"
 
     context = {
         "article_number": article_number,
