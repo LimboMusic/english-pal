@@ -11,7 +11,7 @@ from Article import *
 import Yaml
 from user_service import userService
 from account_service import accountService
-from admin_service import adminService
+from admin_service import adminService, ADMIN_NAME
 app = Flask(__name__)
 app.secret_key = 'lunch.time!'
 
@@ -98,8 +98,13 @@ def mainpage():
         d = load_freq_history(path_prefix + 'static/frequency/frequency.p')
         d_len = len(d)
         lst = sort_in_descending_order(pickle_idea.dict2lst(d))
-        return render_template('mainpage_get.html', random_ads=random_ads, number_of_essays=number_of_essays,
-                               d_len=d_len, lst=lst, yml=Yaml.yml)
+        return render_template('mainpage_get.html', 
+                               admin_name=ADMIN_NAME,
+                               random_ads=random_ads,
+                               d_len=d_len,
+                               lst=lst,
+                               yml=Yaml.yml,
+                               number_of_essays=number_of_essays)
 
 
 if __name__ == '__main__':
