@@ -98,7 +98,7 @@ class UserName:
         for c in self.username: # a user name must not include special characters, except non-leading periods or underscores
             if c in string.punctuation and c != '.' and c != '_':
                 return f'{c} is not allowed in the user name.'
-        if self.username in ['signup', 'login', 'logout', 'reset', 'mark', 'back', 'unfamiliar', 'familiar', 'del', "admin"]:
+        if self.username in ['signup', 'login', 'logout', 'reset', 'mark', 'back', 'unfamiliar', 'familiar', 'del', 'admin']:
             return 'You used a restricted word as your user name.  Please come up with a better one.'
 
         return 'OK'
