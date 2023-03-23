@@ -52,7 +52,7 @@
 
                 <label class="form-label" style="padding-top: 10px;">过期时间</label>
                 <div>
-                    <input type="date" name="expiry_time" placeholder="YYYY-MM-DD" pattern="yyyyMMdd">
+                    <input type="date" id="expiry_date" name="expiry_time" placeholder="YYYY-MM-DD" pattern="yyyyMMdd">
                 </div>
 
             </div>
@@ -79,5 +79,13 @@
         document.getElementById("new_password").value = pwd
     })
 </script>
+
+<script>
+    // Give the user another 365 days
+    const date = new Date();
+    date.setDate(date.getDate() + 365);
+    document.getElementById("expiry_date").value = date.toISOString().split('T')[0];
+</script>
+
 
 </html>
