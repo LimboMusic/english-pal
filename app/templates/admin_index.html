@@ -42,82 +42,15 @@
     </nav>
 
     <div class="card" style="margin-top:24px;">
-        <h5 style="margin-top: 10px;padding-left: 10px;">重置选中用户密码</h5>
-        <form action="" method="post" class="container mb-3">
-            <div class="mb-3">
-                <label  class="form-label">用户</label>
-                <select id="username" name="username" class="form-select" aria-label="Default select example">
-                    <option selected>选择用户</option>
-                    {% for user in user_list %}
-                    <option value="{{ user.name }}">{{ user.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <input type="submit" value="重置密码为：123456" class="btn btn-outline-primary">
-        </form>
-    </div>
-
-    <div class="card" style="margin-top:24px;">
-        {% if tips %}
-        <div class="alert alert-success" role="alert">
-            {{ tips }}
+        <div class="card-header">
+            请选择您需要的操作
         </div>
-        {% endif %}
-        <div class="card-content">
-            <h5 style="margin-top: 10px;padding-left: 10px;">录入文章</h5>
-            <form action="" method="post" class="container mb-3">
-                <div class="mb-3">
-                    <label class="form-label">文章内容</label>
-                    <textarea id="content" name="content" class="form-control" placeholder="请输入文章内容"></textarea>
-                    <label class="form-label">文章来源</label>
-                    <textarea id="source" name="source" class="form-control" placeholder="请输入来源"></textarea>
-                    <label class="form-label">文章等级</label>
-                    <select id="level" class="form-select" name="level">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option selected value="5">5</option>
-                    </select>
-                    <label class="form-label">文章问题</label>
-                    <textarea id="question" name="question" class="form-control" placeholder="请输入问题"></textarea>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <div class="d-grid gap-2">
+                    <a href="/admin/article" class="btn btn-outline-primary" type="button">管理文章</a>
+                    <a href="/admin/user" class="btn btn-outline-primary" type="button">管理用户</a>
                 </div>
-                <input type="submit" value="保存" class="btn btn-outline-primary">
-            </form>
-        </div>
-    </div>
-
-    <div class="card" style="margin-top:24px;">
-        <h5 style="margin-top: 10px;padding-left: 10px;">文章列表</h5>
-        <div class="list-group">
-            {% for text in text_list %}
-            <div class="list-group-item list-group-item-action" aria-current="true">
-                <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1">{{ text.source }}</h5>
-                    <small>Date:{{ text.date }} Level:{{ text.level }}</small>
-                </div>
-                <div style="text-align: right; padding-bottom: 5px;"><a href="/admin?delete_id={{text.article_id}}"
-                        class="btn btn-outline-danger btn-sm">
-                        删除文章
-                    </a></div>
-                <p class="mb-1">{{ text.text }}</p>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    <div style="margin:20px 0;">
-        <ul class="pagination pagination-sm justify-content-center">
-            <li class="page-item"><a class="page-link" href="/admin?page={{ cur_page - 1 }}&size={{ page_size }}">Previous</a>
-            </li>
-            {% for i in range(1, article_number // page_size + 2) %}
-            {% if cur_page == i %}
-            <li class="page-item active"><a class="page-link" href="/admin?page={{ i }}&size={{ page_size }}">{{ i }}</a>
-            </li>
-            {% else %}
-            <li class="page-item"><a class="page-link" href="/admin?page={{ i }}&size={{ page_size }}">{{ i }}</a></li>
-            {% endif %}
-            {% endfor %}
-            <li class="page-item"><a class="page-link" href="/admin?page={{ cur_page + 1 }}&size={{ page_size }}">Next</a>
             </li>
         </ul>
     </div>

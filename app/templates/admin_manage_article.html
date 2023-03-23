@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3.0, user-scalable=yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <link href="../static/css/bootstrap.css" rel="stylesheet">
+</head>
+
+<body class="container" style="width: 800px; margin: auto; margin-top:24px;">
+    <nav class="navbar navbar-expand-lg bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">管理员 {{ username }} 您好！</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/{{ username }}">返回主页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">退出登录</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="card" style="margin-top:24px;">
+        {% if tips %}
+        <div class="alert alert-success" role="alert">
+            {{ tips }}
+        </div>
+        {% endif %}
+        <div class="card-content">
+            <h5 style="margin-top: 10px;padding-left: 10px;">录入文章</h5>
+            <form action="" method="post" class="container mb-3">
+                <div class="mb-3">
+                    <label class="form-label">文章内容</label>
+                    <textarea id="content" name="content" class="form-control" placeholder="请输入文章内容"></textarea>
+                    <label class="form-label">文章来源</label>
+                    <textarea id="source" name="source" class="form-control" placeholder="请输入来源"></textarea>
+                    <label class="form-label">文章等级</label>
+                    <select id="level" class="form-select" name="level">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option selected value="5">5</option>
+                    </select>
+                    <label class="form-label">文章问题</label>
+                    <textarea id="question" name="question" class="form-control" placeholder="请输入问题"></textarea>
+                </div>
+                <input type="submit" value="保存" class="btn btn-outline-primary">
+            </form>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top:24px;">
+        <h5 style="margin-top: 10px;padding-left: 10px;">文章列表</h5>
+        <div class="list-group">
+            {% for text in text_list %}
+            <div class="list-group-item list-group-item-action" aria-current="true">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ text.source }}</h5>
+                    <small>Date:{{ text.date }} Level:{{ text.level }}</small>
+                </div>
+                <div style="text-align: right; padding-bottom: 5px;"><a href="/admin/article?delete_id={{text.article_id}}"
+                        class="btn btn-outline-danger btn-sm">
+                        删除文章
+                    </a></div>
+                <p class="mb-1">{{ text.text }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div style="margin:20px 0;">
+        <ul class="pagination pagination-sm justify-content-center">
+            <li class="page-item"><a class="page-link" href="/admin/article?page={{ cur_page - 1 }}&size={{ page_size }}">Previous</a>
+            </li>
+            {% for i in range(1, article_number // page_size + 2) %}
+            {% if cur_page == i %}
+            <li class="page-item active"><a class="page-link" href="/admin/article?page={{ i }}&size={{ page_size }}">{{ i }}</a>
+            </li>
+            {% else %}
+            <li class="page-item"><a class="page-link" href="/admin/article?page={{ i }}&size={{ page_size }}">{{ i }}</a></li>
+            {% endif %}
+            {% endfor %}
+            <li class="page-item"><a class="page-link" href="/admin/article?page={{ cur_page + 1 }}&size={{ page_size }}">Next</a>
+            </li>
+        </ul>
+    </div>
+</body>
+
+</html>

@@ -1,9 +1,10 @@
+# System Library
 from flask import *
-from model import *
-from pony.orm import *
+
+# Personal library
 from Yaml import yml
-from Login import md5
-from datetime import datetime
+from model.user import *
+from model.article import *
 
 ADMIN_NAME = "lanhui"  # unique admin name
 _cur_page = 1  # current article page
@@ -11,33 +12,54 @@ _page_size = 5  # article sizes per page
 adminService = Blueprint("admin_service", __name__)
 
 
-@adminService.route("/admin", methods=["GET", "POST"])
-def admin():
-    global _cur_page, _page_size
+def check_is_admin():
     # 未登录，跳转到未登录界面
     if not session.get("logged_in"):
         return render_template("not_login.html")
 
-    # 获取session里的用户名
-    username = session.get("username")
-    if username != ADMIN_NAME:
+    # 用户名不是admin_name
+    if session.get("username") != ADMIN_NAME:
         return "You are not admin!"
+
+    return "pass"
+
+
+@adminService.route("/admin", methods=["GET"])
+def admin():
+    is_admin = check_is_admin()
+    if is_admin != "pass":
+        return is_admin
+
+    return render_template(
+        "admin_index.html", yml=yml, username=session.get("username")
+    )
+
+
+@adminService.route("/admin/article", methods=["GET", "POST"])
+def article():
+    global _cur_page, _page_size
+
+    is_admin = check_is_admin()
+    if is_admin != "pass":
+        return is_admin
 
     article_number = get_number_of_articles()
     try:
-        _page_size = min(max(1, int(request.args.get("size", 5))), article_number)  # 最小的size是1
-        _cur_page = min(max(1, int(request.args.get("page", 1))), article_number // _page_size + 1) # 最小的page是1
+        _page_size = min(
+            max(1, int(request.args.get("size", 5))), article_number
+        )  # 最小的size是1
+        _cur_page = min(
+            max(1, int(request.args.get("page", 1))), article_number // _page_size + 1
+        )  # 最小的page是1
     except ValueError:
         return "page parmas must be int!"
 
     context = {
         "article_number": article_number,
+        "text_list": get_page_articles(_cur_page, _page_size),
         "page_size": _page_size,
         "cur_page": _cur_page,
-        "text_list": get_page_articles(_cur_page, _page_size),
-        "user_list": get_users(),
-        "username": username,
-        "yml": yml,
+        "username": session.get("username"),
     }
 
     def _update_context():
@@ -46,71 +68,50 @@ def admin():
         context["text_list"] = get_page_articles(_cur_page, _page_size)
 
     if request.method == "GET":
-        delete_id = int(request.args.get("delete_id", 0))
+        try:
+            delete_id = int(request.args.get("delete_id", 0))
+        except:
+            return "Delete article ID must be int!"
         if delete_id:  # delete article
-            delete_article(delete_id)
+            delete_article_by_id(delete_id)
             _update_context()
-    else:
+    elif request.method == "POST":
         data = request.form
         content = data.get("content", "")
         source = data.get("source", "")
         question = data.get("question", "")
-        username = data.get("username", "")
         level = data.get("level", "5")
         if content:
-            try:    # check level
+            try:  # check level
                 if level not in [str(x + 1) for x in range(5)]:
                     raise ValueError
             except ValueError:
-                return "level must be between 1 and 5"
+                return "Level must be between 1 and 5"
             add_article(content, source, level, question)
             _update_context()
+
+    return render_template("admin_manage_article.html", **context)
+
+
+@adminService.route("/admin/user", methods=["GET", "POST"])
+def user():
+    is_admin = check_is_admin()
+    if is_admin != "pass":
+        return is_admin
+    
+    context = {
+        "user_list": get_users(),
+        "username": session.get("username"),
+    }
+    if request.method == "POST":
+        data = request.form
+        username = data.get("username","")
+        new_password = data.get("new_password", "")
+        expiry_time = data.get("expiry_time", "")
         if username:
-            update_user_password(username)
-
-    return render_template("admin_index.html", **context)
-
-
-def add_article(content, source="manual_input", level="5", question="No question"):
-    with db_session:
-        # add one article to sqlite
-        Article(
-            text=content,
-            source=source,
-            date=datetime.now().strftime("%-d %b %Y"),  # format style of `5 Oct 2022`
-            level=level,
-            question=question,
-        )
-
-
-def delete_article(article_id):
-    article_id &= 0xFFFFFFFF  # max 32 bits
-    with db_session:
-        article = Article.select(article_id=article_id)
-        if article:
-            article.first().delete()
-
-
-def get_number_of_articles():
-    with db_session:
-        return len(Article.select()[:])
-
-
-def get_page_articles(num, size):
-    with db_session:
-        return [
-            x
-            for x in Article.select().order_by(desc(Article.article_id)).page(num, size)
-        ]
-
-
-def get_users():
-    with db_session:
-        return User.select().order_by(User.name)[:]
-
-
-def update_user_password(username, password="123456"):
-    with db_session:
-        user = User.select(name=username)
-        if user:
-            user.first().password = md5(username + password)
+            if new_password:
+                update_password_by_username(username, new_password)
+            if expiry_time:
+                update_expiry_time_by_username(username, "".join(expiry_time.split("-")))
+    
+    return render_template("admin_manage_user.html", **context)
