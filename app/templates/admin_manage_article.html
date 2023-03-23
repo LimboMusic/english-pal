@@ -41,9 +41,9 @@
             <form action="" method="post" class="container mb-3">
                 <div class="mb-3">
                     <label class="form-label">文章内容</label>
-                    <textarea id="content" name="content" class="form-control" placeholder="请输入文章内容"></textarea>
+                    <textarea id="content" name="content" class="form-control" rows="8" placeholder="首行是标题，后面是正文。"></textarea>
                     <label class="form-label">文章来源</label>
-                    <textarea id="source" name="source" class="form-control" placeholder="请输入来源"></textarea>
+                    <textarea id="source" name="source" class="form-control" placeholder="推荐格式：Source: HTTP 链接。"></textarea>
                     <label class="form-label">文章等级</label>
                     <select id="level" class="form-select" name="level">
                         <option value="1">1</option>
@@ -52,7 +52,7 @@
                         <option selected value="4">4</option>
                     </select>
                     <label class="form-label">文章问题</label>
-                    <textarea id="question" name="question" class="form-control" placeholder="请输入问题"></textarea>
+                    <textarea id="question" name="question" class="form-control" rows="6" placeholder="格式：&#x0a; QUESTION&#x0a; What?&#x0a;&#x0a; ANSWER&#x0a; Apple. "></textarea>
                 </div>
                 <input type="submit" value="保存" class="btn btn-outline-primary">
             </form>
