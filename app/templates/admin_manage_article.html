@@ -66,14 +66,16 @@
             {% for text in text_list %}
             <div class="list-group-item list-group-item-action" aria-current="true">
                 <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1">{{ text.source }}</h5>
-                    <small>Date:{{ text.date }} Level:{{ text.level }}</small>
+                    <h5 class="mb-1">{{ text.title }}</h5>
+                    <a type="button" href="/admin/article?delete_id={{text.article_id}}"
+                        class="btn btn-outline-danger btn-sm">删除</a>
                 </div>
-                <div style="text-align: right; padding-bottom: 5px;"><a href="/admin/article?delete_id={{text.article_id}}"
-                        class="btn btn-outline-danger btn-sm">
-                        删除文章
-                    </a></div>
-                <p class="mb-1">{{ text.text }}</p>
+                <div><small>{{ text.source }}</small></div>
+                <div class="d-flex w-100 justify-content-between">
+                    <small>Level:{{text.level }}</small>
+                    <small>Date:{{ text.date }}</small>
+                </div>
+                <p style="padding-top: 5px;" class="mb-1">{{ text.text }}</p>
             </div>
             {% endfor %}
         </div>

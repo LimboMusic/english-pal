@@ -43,20 +43,24 @@ def article():
     if is_admin != "pass":
         return is_admin
 
-    article_number = get_number_of_articles()
+    _article_number = get_number_of_articles()
     try:
         _page_size = min(
-            max(1, int(request.args.get("size", 5))), article_number
+            max(1, int(request.args.get("size", 5))), _article_number
         )  # 最小的size是1
         _cur_page = min(
-            max(1, int(request.args.get("page", 1))), article_number // _page_size + 1
+            max(1, int(request.args.get("page", 1))), _article_number // _page_size + 1
         )  # 最小的page是1
     except ValueError:
         return "page parmas must be int!"
-
+    
+    _articles = get_page_articles(_cur_page, _page_size)
+    for article in _articles:   # 获取每篇文章的title
+        article.title = article.text.split("\n")[0]
+    
     context = {
-        "article_number": article_number,
-        "text_list": get_page_articles(_cur_page, _page_size),
+        "article_number": _article_number,
+        "text_list": _articles,
         "page_size": _page_size,
         "cur_page": _cur_page,
         "username": session.get("username"),
