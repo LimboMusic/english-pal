@@ -49,7 +49,7 @@ def article():
             max(1, int(request.args.get("size", 5))), _article_number
         )  # 最小的size是1
         _cur_page = min(
-            max(1, int(request.args.get("page", 1))), _article_number // _page_size + 1
+            max(1, int(request.args.get("page", 1))), _article_number // _page_size + (_article_number % _page_size > 0)
         )  # 最小的page是1
     except ValueError:
         return "page parmas must be int!"
