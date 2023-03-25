@@ -36,7 +36,7 @@
         <form id="user_form" action="" method="post" class="container mb-3">
             <div>
                 <label class="form-label" style="padding-top: 10px;">用户</label>
-                <select id="username" name="username" class="form-select" aria-label="Default select example">
+                <select onchange="select_user()" id="username" name="username" class="form-select" aria-label="Default select example">
                     <option selected>选择用户</option>
                     {% for user in user_list %}
                     <option value="{{ user.name }}">{{ user.name }}</option>
@@ -78,6 +78,19 @@
         let pwd = generatePassword(12)
         document.getElementById("new_password").value = pwd
     })
+    // 选择用户后更新其过期时间
+    function select_user() {
+        let cur_user = $('#username').val();
+        {% for user in user_list %}
+            if (cur_user == "{{ user.name }}") {
+                const dateString = "{{ user.expiry_date }}"
+                const year = dateString.substr(0,4);
+                const month = dateString.substr(4,2);
+                const day = dateString.substr(6,2);
+                document.getElementById("expiry_date").value = year + '-' + month + '-' + day
+            }
+        {% endfor %}
+    }
 </script>
 
 <script>
