@@ -70,6 +70,10 @@ def article():
         article_len = get_number_of_articles()
         context["article_number"] = article_len
         context["text_list"] = get_page_articles(_cur_page, _page_size)
+        _articles = get_page_articles(_cur_page, _page_size)
+        for article in _articles:   # 获取每篇文章的title
+            article.title = article.text.split("\n")[0]
+        context["text_list"] = _articles
 
     if request.method == "GET":
         try:
