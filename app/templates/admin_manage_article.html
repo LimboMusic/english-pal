@@ -77,7 +77,7 @@
                     <small>Level: {{text.level }}</small>
                     <small>Date: {{ text.date }}</small>
                 </div>
-                <p style="padding-top: 5px;" class="mb-1">{{ text.content }}</p>
+                {{ text.content | safe }}
             </div>
             {% endfor %}
         </div>
