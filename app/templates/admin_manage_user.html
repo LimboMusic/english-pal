@@ -31,6 +31,12 @@
         </div>
     </nav>
 
+    {% for message in get_flashed_messages() %}
+      <div class="alert alert-success" role="alert">
+        {{ message }}
+      </div>
+    {% endfor %}
+
     <div class="card" style="margin-top:24px;">
         <h5 style="margin-top: 10px;padding-left: 10px;">重置选中用户的信息</h5>
         <form id="user_form" action="" method="post" class="container mb-3">

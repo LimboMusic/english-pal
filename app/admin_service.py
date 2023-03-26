@@ -97,7 +97,8 @@ def article():
                 return "Level must be between 1 and 5"
             add_article(content, source, level, question)
             _update_context()
-
+            title = content.split('\n')[0]
+            flash(f'Article added. Title: {title}')
     return render_template("admin_manage_article.html", **context)
 
 
@@ -119,7 +120,8 @@ def user():
         if username:
             if new_password:
                 update_password_by_username(username, new_password)
+                flash(f'Password updated to {new_password}')
             if expiry_time:
                 update_expiry_time_by_username(username, "".join(expiry_time.split("-")))
-    
+                flash(f'Expiry date updated to {expiry_time}.')
     return render_template("admin_manage_user.html", **context)

@@ -30,6 +30,12 @@
         </div>
     </nav>
 
+    {% for message in get_flashed_messages() %}
+      <div class="alert alert-success" role="alert">
+        {{ message }}
+      </div>
+    {% endfor %}
+
     <div class="card" style="margin-top:24px;">
         {% if tips %}
         <div class="alert alert-success" role="alert">
