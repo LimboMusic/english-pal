@@ -57,6 +57,7 @@ def article():
     _articles = get_page_articles(_cur_page, _page_size)
     for article in _articles:   # 获取每篇文章的title
         article.title = article.text.split("\n")[0]
+        article.content = ''.join(article.text.split("\n")[1:])
     
     context = {
         "article_number": _article_number,
