@@ -40,9 +40,9 @@
         <a class="btn btn-secondary" href="/logout" role="button">退出</a>
         <a class="btn btn-secondary" href="/reset" role="button">重设密码</a>
     </p>
-    {% for message in messages %}
-        <div class="alert alert-warning" role="alert">Congratulations! {{ message }}</div>
-    {% endfor %}
+{#    {% for message in flashed_messages %}#} {# 根据user_service.userpage,取消了参数flashed_messages，因此注释了这段代码 #}
+{#        <div class="alert alert-warning" role="alert">Congratulations! {{ message }}</div>#}
+{#    {% endfor %}#}
 
     <a class="btn btn-success" href="/{{ username }}/reset" role="button"> 下一篇 Next Article </a>
     {% if session.get('existing_articles')[0] != None and session.get('existing_articles')[0] !=0 %}
