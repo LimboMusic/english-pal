@@ -59,7 +59,8 @@ def get_today_article(user_word_list, existing_articles):
             text_level = text_difficulty_level(reading['text'], d3)
             factor = random.gauss(0.8,
                                   0.1)  # a number drawn from Gaussian distribution with a mean of 0.8 and a stand deviation of 1
-            if within_range(reading['article_id'] not in existing_articles[1] and text_level, user_level, (8.0 - user_level) * factor):  # 新的文章之前没有出现过且符合一定范围的水平
+            print("factor:{}, text_level:{}, user_level:{}, range:{}".format(factor, text_level, user_level, (8.0 - user_level) * factor))
+            if reading['article_id'] not in existing_articles[1] and within_range(text_level, user_level, (8.0 - user_level) * factor):  # 新的文章之前没有出现过且符合一定范围的水平
                 d = reading
                 existing_articles[1].append(d['article_id'])  # 列表添加新的文章id；下面进行
                 flag = True
