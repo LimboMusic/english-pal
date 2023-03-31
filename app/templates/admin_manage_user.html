@@ -82,16 +82,17 @@
     })
     // 选择用户后更新其过期时间
     function loadUserExpiryDate() {
-        let cur_user = $('#username').val();
-        {% for user in user_list %}
-            if (cur_user == "{{ user.name }}") {
-                const dateString = "{{ user.expiry_date }}"
-                const year = dateString.substr(0,4);
-                const month = dateString.substr(4,2);
-                const day = dateString.substr(6,2);
+        const cur_user = $('#username').val();
+        $.ajax({
+            type: "GET",
+            url: `/admin/expiry?username=${cur_user}`,
+            success: function(resp) {
+                const year = resp.substr(0,4);
+                const month = resp.substr(4,2);
+                const day = resp.substr(6,2);
                 document.getElementById("expiry_date").value = year + '-' + month + '-' + day
             }
-        {% endfor %}
+        })
     }
 </script>
 

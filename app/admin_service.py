@@ -126,3 +126,20 @@ def user():
                 update_expiry_time_by_username(username, "".join(expiry_time.split("-")))
                 flash(f'Expiry date updated to {expiry_time}.')
     return render_template("admin_manage_user.html", **context)
+
+
+@adminService.route("/admin/expiry", methods=["GET"])
+def user_expiry_time():
+    is_admin = check_is_admin()
+    if is_admin != "pass":
+        return is_admin
+    
+    username = request.args.get("username", "")
+    if not username:
+        return "Username can't empty"
+    
+    user = get_user_by_username(username)
+    if not user:
+        return "User not exist"
+    
+    return user.expiry_date
