@@ -133,13 +133,13 @@ def user_expiry_time():
     is_admin = check_is_admin()
     if is_admin != "pass":
         return is_admin
-    
+
     username = request.args.get("username", "")
     if not username:
-        return "Username can't empty"
-    
+        return "Username can't be empty."
+
     user = get_user_by_username(username)
     if not user:
-        return "User not exist"
-    
+        return "User does not exist."
+
     return user.expiry_date
