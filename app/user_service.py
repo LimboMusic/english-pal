@@ -31,7 +31,7 @@ def user_reset(username):
     '''
     if request.method == 'GET':
         existing_articles = session.get("existing_articles")
-        existing_articles[0] += 1
+        existing_articles["index"] += 1
         session["existing_articles"] = existing_articles
         return redirect(url_for('user_bp.userpage', username=username))
     else:
@@ -46,7 +46,7 @@ def user_back(username):
     '''
     if request.method == 'GET':
         existing_articles = session.get("existing_articles")
-        existing_articles[0] -= 1
+        existing_articles["index"] -= 1
         session["existing_articles"] = existing_articles
         return redirect(url_for('user_bp.userpage', username=username))
 

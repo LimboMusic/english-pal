@@ -45,7 +45,7 @@
 {#    {% endfor %}#}
 
     <a class="btn btn-success" href="/{{ username }}/reset" role="button"> 下一篇 Next Article </a>
-    {% if session.get('existing_articles')[0] != None and session.get('existing_articles')[0] !=0 %}
+    {% if session.get('existing_articles') != None and session.get('existing_articles')["index"] !=0 %}
         <a class="btn btn-success" href="/{{ username }}/back" role="button"> 上一篇 Previous Article </a>
     {% endif %}
 
