@@ -39,8 +39,7 @@ def get_random_ads():
     返回随机广告
     :return: 一个广告(包含HTML标签)
     '''
-    ads = random.choice(['个性化分析精准提升', '你的专有单词本', '智能捕捉阅读弱点，针对性提高你的阅读水平'])
-    return ads + '。 <a href="/signup">试试</a>吧！'
+    return random.choice(['个性化分析精准提升', '你的专有单词本', '智能捕捉阅读弱点，针对性提高你的阅读水平'])
 
 
 def appears_in_test(word, d):

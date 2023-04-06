@@ -29,9 +29,10 @@ def user_reset(username):
     :param username: 用户名
     :return: 返回页面内容
     '''
-    session['old_articleID'] = session.get('articleID')
     if request.method == 'GET':
-        session['articleID'] = None
+        existing_articles = session.get("existing_articles")
+        existing_articles["index"] += 1
+        session["existing_articles"] = existing_articles
         return redirect(url_for('user_bp.userpage', username=username))
     else:
         return 'Under construction'
@@ -44,7 +45,9 @@ def user_back(username):
     :return: 返回页面内容
     '''
     if request.method == 'GET':
-        session['articleID'] = session.get('old_articleID')
+        existing_articles = session.get("existing_articles")
+        existing_articles["index"] -= 1
+        session["existing_articles"] = existing_articles
         return redirect(url_for('user_bp.userpage', username=username))
 
 
@@ -89,7 +92,8 @@ def deleteword(username, word):
     '''
     user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
     pickle_idea2.deleteRecord(user_freq_record, word)
-    flash(f'<strong>{word}</strong> is no longer in your word list.')
+    # 模板userpage_get.html中删除单词是异步执行，而flash的信息后续是同步执行的，所以注释这段代码；同时如果这里使用flash但不提取信息，则会影响 signup.html的显示。bug复现：删除单词后，点击退出，点击注册，注册页面就会出现提示信息
+    # flash(f'{word} is no longer in your word list.')
     return "success"
 
 
@@ -130,12 +134,15 @@ def userpage(username):
         words = ''
         for x in lst3:
             words += x[0] + ' '
+        existing_articles, today_article = get_today_article(user_freq_record, session.get('existing_articles'))
+        session['existing_articles'] = existing_articles
+        # 通过 today_article，加载前端的显示页面
         return render_template('userpage_get.html',
                                admin_name=ADMIN_NAME,
                                username=username,
                                session=session,
-                               flashed_messages=get_flashed_messages_if_any(),
-                               today_article=get_today_article(user_freq_record, session['articleID']),
+                               # flashed_messages=get_flashed_messages(), 仅有删除单词的时候使用到flash，而删除单词是异步执行，这里的信息提示是同步执行，所以就没有存在的必要了
+                               today_article=today_article,
                                d_len=len(d),
                                lst3=lst3,
                                yml=Yaml.yml,
@@ -174,15 +181,3 @@ def get_time():
     '''
     return datetime.now().strftime('%Y%m%d%H%M')  # upper to minutes
 
-def get_flashed_messages_if_any():
-    '''
-    在用户界面显示黄色提示信息
-    :return: 包含HTML标签的提示信息
-    '''
-    messages = get_flashed_messages()
-    s = ''
-    for message in messages:
-        s += '<div class="alert alert-warning" role="alert">'
-        s += f'Congratulations! {message}'
-        s += '</div>'
-    return s
