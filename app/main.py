@@ -5,23 +5,23 @@
 # Copyright 2019 (C) Hui Lan <hui.lan@cantab.net>
 # Written permission must be obtained from the author for commercial uses.
 ###########################################################################
-
 from flask import escape
 from Login import *
 from Article import *
 import Yaml
 from user_service import userService
 from account_service import accountService
+from admin_service import adminService, ADMIN_NAME
 app = Flask(__name__)
 app.secret_key = 'lunch.time!'
 
 # 将蓝图注册到Lab app
 app.register_blueprint(userService)
 app.register_blueprint(accountService)
+app.register_blueprint(adminService)
 
 path_prefix = '/var/www/wordfreq/wordfreq/'
 path_prefix = './'  # comment this line in deployment
-
 
 def get_random_image(path):
     '''
@@ -39,8 +39,7 @@ def get_random_ads():
     返回随机广告
     :return: 一个广告(包含HTML标签)
     '''
-    ads = random.choice(['个性化分析精准提升', '你的专有单词本', '智能捕捉阅读弱点，针对性提高你的阅读水平'])
-    return ads + '。 <a href="/signup">试试</a>吧！'
+    return random.choice(['个性化分析精准提升', '你的专有单词本', '智能捕捉阅读弱点，针对性提高你的阅读水平'])
 
 
 def appears_in_test(word, d):
@@ -98,9 +97,13 @@ def mainpage():
         d = load_freq_history(path_prefix + 'static/frequency/frequency.p')
         d_len = len(d)
         lst = sort_in_descending_order(pickle_idea.dict2lst(d))
-        return render_template('mainpage_get.html', random_ads=random_ads, number_of_essays=number_of_essays,
-                               d_len=d_len, lst=lst, yml=Yaml.yml)
-
+        return render_template('mainpage_get.html', 
+                               admin_name=ADMIN_NAME,
+                               random_ads=random_ads,
+                               d_len=d_len,
+                               lst=lst,
+                               yml=Yaml.yml,
+                               number_of_essays=number_of_essays)
 
 
 if __name__ == '__main__':

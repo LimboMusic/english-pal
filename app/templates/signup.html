@@ -6,6 +6,47 @@ You're logged in already! <a href="/logout">Logout</a>.
 {% else %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3.0, user-scalable=yes" />
 <link rel="stylesheet" href="static/css/login_service.css">
+<script src="static/js/jquery.js"></script>
+    <script>
+        function signup() {
+            let username = $("#username").val();
+            let password = $("#password").val();
+            let password2 = $("#password2").val();
+            if (username === "" || password === "" || password2 === ""){
+                alert('输入不能为空!');
+                return false;
+            }
+            if (password !== password2) {
+                alert('确认密码与输入密码不一致！');
+                return false;
+            }
+            if (password.length < 4) {
+                alert('密码过于简单。(密码长度至少4位)');
+                return false;
+            }
+            $.post("/signup", {'username': username, 'password': password},
+                function (response) {
+                    if (response.status === '0') {
+                        alert('用户名'+username+'已经被注册。');
+                        window.location.href = "/signup";
+                    } else if (response.status === '1') {
+                        alert('用户名密码验证失败。');
+                        window.location.href = "/signup";
+                    } else if (response.status === '2') {
+                        let f = confirm("恭喜，你已成功注册，你的用户名是"+username+'.\n点击“确认”开始使用，或点击“取消”返回首页');
+                        if (f) {
+                            window.location.href = '/'+username;
+                        } else {
+                            window.location.href = '/';
+                        }
+                    } else if (response.status === '3') {
+                        alert(response.warn);
+                    }
+                }
+            )
+            return false;
+        }
+    </script>
 <p>{{ get_flashed_messages()[0] | safe }}</p>
 
 
@@ -15,12 +56,10 @@ You're logged in already! <a href="/logout">Logout</a>.
     <h1>Sign Up</h1>
   </section>
 
-  <form action="/signup" method="POST">
-    <p><input type="username" name="username" placeholder="输入用户名" required="required" class="username"></p>
-    <p><input type="password" name="password" placeholder="输入密码" class="password"></p>
-    <p><input type="password" name="password2" placeholder="确认密码" class="password"></p>
-    <button type="submit" class="btn">注册</button>
-  </form>
+  <p><input type="username" id="username" placeholder="输入用户名" class="username"></p>
+  <p><input type="password" id="password" placeholder="输入密码" class="password"></p>
+  <p><input type="password" id="password2" placeholder="确认密码" class="password" ></p>
+  <button type="button" class="btn" onclick="signup()">注册</button>
 
 </div>
   

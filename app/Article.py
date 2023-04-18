@@ -32,12 +32,17 @@ def get_article_body(s):
     return '\n'.join(lst)
 
 
-def get_today_article(user_word_list, articleID):
+def get_today_article(user_word_list, existing_articles):
     rq = RecordQuery(path_prefix + 'static/wordfreqapp.db')
-    if articleID == None:
+    if existing_articles is None:
+        existing_articles = {
+            "index" : 0,  # 为 article_ids 的索引
+            "article_ids": []  # 之前显示文章的id列表，越后越新
+        }
+    if existing_articles["index"] > len(existing_articles["article_ids"])-1:
         rq.instructions("SELECT * FROM article")
     else:
-        rq.instructions('SELECT * FROM article WHERE article_id=%d' % (articleID))
+        rq.instructions('SELECT * FROM article WHERE article_id=%d' % (existing_articles["article_ids"][existing_articles["index"]]))
     rq.do()
     result = rq.get_results()
     random.shuffle(result)
@@ -47,36 +52,41 @@ def get_today_article(user_word_list, articleID):
     d2 = load_freq_history(path_prefix + 'static/words_and_tests.p')
     d3 = get_difficulty_level(d1, d2)
 
-    d = {}
+    d = None
     d_user = load_freq_history(user_word_list)
     user_level = user_difficulty_level(d_user, d3)  # more consideration as user's behaviour is dynamic. Time factor should be considered.
-    random.shuffle(result)  # shuffle list
-    d = random.choice(result)
-    text_level = text_difficulty_level(d['text'], d3)
-    if articleID == None:
+    text_level = 0
+    if existing_articles["index"] > len(existing_articles["article_ids"])-1:  # 下一篇
+        flag_get_article = False
         for reading in result:
             text_level = text_difficulty_level(reading['text'], d3)
             factor = random.gauss(0.8,
                                   0.1)  # a number drawn from Gaussian distribution with a mean of 0.8 and a stand deviation of 1
-            if within_range(text_level, user_level, (8.0 - user_level) * factor):
+            if reading['article_id'] not in existing_articles["article_ids"] and within_range(text_level, user_level, (8.0 - user_level) * factor):  # 新的文章之前没有出现过且符合一定范围的水平
                 d = reading
+                existing_articles["article_ids"].append(d['article_id'])  # 列表添加新的文章id；下面进行
+                flag_get_article = True
                 break
+        if not flag_get_article:
+            existing_articles["index"] -= 1
+    else:  # 上一篇
+        d = random.choice(result)
+        text_level = text_difficulty_level(d['text'], d3)
 
-    s = '<div class="alert alert-success" role="alert">According to your word list, your level is <span class="badge bg-success">%4.2f</span>  and we have chosen an article with a difficulty level of <span class="badge bg-success">%4.2f</span> for you.</div>' % (
-        user_level, text_level)
-    s += '<p class="text-muted">Article added on: %s</p>' % (d['date'])
-    s += '<div class="p-3 mb-2 bg-light text-dark">'
-    article_title = get_article_title(d['text'])
-    article_body = get_article_body(d['text'])
-    s += '<p class="display-5">%s</p>' % (article_title)
-    s += '<p class="lead"><font id="article" size=2>%s</font></p>' % (article_body)
-    s += '<p><small class="text-muted">%s</small></p>' % (d['source'])
-    s += '<p><b>%s</b></p>' % (get_question_part(d['question']))
-    s = s.replace('\n', '<br/>')
-    s += '%s' % (get_answer_part(d['question']))
-    s += '</div>'
-    session['articleID'] = d['article_id']
-    return s
+    today_article = None
+    if d:
+        today_article = {
+            "user_level": '%4.2f' % user_level,
+            "text_level": '%4.2f' % text_level,
+            "date": d['date'],
+            "article_title": get_article_title(d['text']),
+            "article_body": get_article_body(d['text']),
+            "source": d["source"],
+            "question": get_question_part(d['question']),
+            "answer": get_answer_part(d['question'])
+        }
+
+    return existing_articles, today_article
 
 
 def load_freq_history(path):
@@ -116,21 +126,4 @@ def get_answer_part(s):
             flag = 1
         elif flag == 1:
             result.append(line)
-    # https://css-tricks.com/snippets/javascript/showhide-element/
-    js = '''
-<script type="text/javascript">
-
-    function toggle_visibility(id) {
-       var e = document.getElementById(id);
-       if(e.style.display == 'block')
-          e.style.display = 'none';
-       else
-          e.style.display = 'block';
-    }
-</script>
-    '''
-    html_code = js
-    html_code += '\n'
-    html_code += '<button onclick="toggle_visibility(\'answer\');">ANSWER</button>\n'
-    html_code += '<div id="answer" style="display:none;">%s</div>\n' % ('\n'.join(result))
-    return html_code
+    return '\n'.join(result)

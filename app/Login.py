@@ -1,6 +1,6 @@
 import hashlib
 import string
-from datetime import datetime
+from datetime import datetime, timedelta
 from UseSqlite import InsertQuery, RecordQuery
 
 path_prefix = '/var/www/wordfreq/wordfreq/'
@@ -23,7 +23,7 @@ def verify_user(username, password):
 
 def add_user(username, password):
     start_date = datetime.now().strftime('%Y%m%d')
-    expiry_date = '20221230'
+    expiry_date = (datetime.now() + timedelta(days=30)).strftime('%Y%m%d') # will expire after 30 days
     # 将用户名和密码一起加密，以免暴露不同用户的相同密码
     password = md5(username + password)
     rq = InsertQuery(path_prefix + 'static/wordfreqapp.db')
@@ -96,9 +96,9 @@ class UserName:
         if ' ' in self.username: # a user name must not include a whitespace
             return 'Whitespace is not allowed in the user name.'
         for c in self.username: # a user name must not include special characters, except non-leading periods or underscores
-            if c in string.punctuation and c is not '.' and c is not '_':
+            if c in string.punctuation and c != '.' and c != '_':
                 return f'{c} is not allowed in the user name.'
-        if self.username in ['signup', 'login', 'logout', 'reset', 'mark', 'back', 'unfamiliar', 'familiar', 'del']:
+        if self.username in ['signup', 'login', 'logout', 'reset', 'mark', 'back', 'unfamiliar', 'familiar', 'del', 'admin']:
             return 'You used a restricted word as your user name.  Please come up with a better one.'
 
         return 'OK'
