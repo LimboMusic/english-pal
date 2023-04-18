@@ -38,8 +38,23 @@ function highLight() {
         list[i] = list[i].replace('|', "");
         list[i] = list[i].replace('?', "");
         if (list[i] !== "" && "<mark>".indexOf(list[i]) === -1 && "</mark>".indexOf(list[i]) === -1) {
-	    //将文章中所有出现该单词word的地方改为：" <mark>" + word + "<mark> "。 正则表达式RegExp()中，"\\s"代表单词前后必须要有空格，以防止只对单词中的部分字符高亮的情况出现。
-            articleContent = articleContent.replace(new RegExp("\\s"+list[i]+"\\s", "g"), " <mark>" + list[i] + "</mark> ");
+           //将文章中所有出现该单词word的地方改为："<mark>" + word + "<mark>"。 正则表达式RegExp()中，"\\b"代表单词边界匹配。
+
+            //修改代码
+            let articleContent_fb = articleContent;  //文章副本
+            let count = 1000;  //简单计数器，防止陷入死循环。
+            while(articleContent_fb.toLowerCase().indexOf(list[i].toLowerCase()) !== -1 && list[i]!=""){
+                //针对同一篇文章中可能存在相同单词的不同大小写问题，采用while循环判断副本中是否还存在匹配单词。
+
+                count--;
+                if(count <= 0)break;   //TimeOut!
+
+                //找到副本中和list[i]匹配的第一个单词(第一种匹配情况),并赋值给list[i]。
+                list[i] = articleContent_fb.substr(articleContent_fb.toLowerCase().indexOf(list[i].toLowerCase()),list[i].length);
+
+                articleContent_fb = articleContent_fb.replace(list[i],""); //删除副本中和list[i]匹配的单词
+                articleContent = articleContent.replace(new RegExp("\\b"+list[i]+"\\b","g"),"<mark>" + list[i] + "</mark>");
+            }
         }
     }
     document.getElementById("article").innerHTML = articleContent;
