@@ -30,9 +30,9 @@ def user_reset(username):
     :return: 返回页面内容
     '''
     if request.method == 'GET':
-        existing_articles = session.get("existing_articles")
-        existing_articles["index"] += 1
-        session["existing_articles"] = existing_articles
+        had_read_articles = session.get("had_read_articles")
+        had_read_articles["index"] += 1
+        session["had_read_articles"] = had_read_articles
         return redirect(url_for('user_bp.userpage', username=username))
     else:
         return 'Under construction'
@@ -45,9 +45,9 @@ def user_back(username):
     :return: 返回页面内容
     '''
     if request.method == 'GET':
-        existing_articles = session.get("existing_articles")
-        existing_articles["index"] -= 1
-        session["existing_articles"] = existing_articles
+        had_read_articles = session.get("had_read_articles")
+        had_read_articles["index"] -= 1
+        session["had_read_articles"] = had_read_articles
         return redirect(url_for('user_bp.userpage', username=username))
 
 
@@ -134,8 +134,8 @@ def userpage(username):
         words = ''
         for x in lst3:
             words += x[0] + ' '
-        existing_articles, today_article = get_today_article(user_freq_record, session.get('existing_articles'))
-        session['existing_articles'] = existing_articles
+        had_read_articles, today_article = get_today_article(user_freq_record, session.get('had_read_articles'))
+        session['had_read_articles'] = had_read_articles
         # 通过 today_article，加载前端的显示页面
         return render_template('userpage_get.html',
                                username=username,
