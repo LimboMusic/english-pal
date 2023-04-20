@@ -35,7 +35,7 @@ You're logged in already! <a href="/logout">Logout</a>.
                     } else if (response.status === '2') {
                         let f = confirm("恭喜，你已成功注册，你的用户名是"+username+'.\n点击“确认”开始使用，或点击“取消”返回首页');
                         if (f) {
-                            window.location.href = '/'+username;
+                            window.location.href = '/'+username+'/userpage';
                         } else {
                             window.location.href = '/';
                         }

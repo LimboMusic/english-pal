@@ -97,7 +97,7 @@ def deleteword(username, word):
     return "success"
 
 
-@userService.route("/<username>", methods=['GET', 'POST'])
+@userService.route("/<username>/userpage", methods=['GET', 'POST'])
 def userpage(username):
     '''
     用户界面
@@ -105,6 +105,7 @@ def userpage(username):
     :return: 返回用户界面
     '''
     # 未登录，跳转到未登录界面
+    print("123123")
     if not session.get('logged_in'):
         return render_template('not_login.html')
 
