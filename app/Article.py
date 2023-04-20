@@ -63,9 +63,7 @@ def get_today_article(user_word_list, had_read_articles):
         if amount_of_had_read_articles == amount_of_existing_articles:  # 如果当前阅读过的文章的数量 == 存在的文章的数量，即所有的书本都阅读过了
             result_of_generate_article = "had read all articles"
         else:
-            test_count = 0
             for k in range(3):  # 最多尝试3次
-                test_count += 1
                 for reading in result:
                     text_level = text_difficulty_level(reading['text'], d3)
                     factor = random.gauss(0.8, 0.1)  # a number drawn from Gaussian distribution with a mean of 0.8 and a stand deviation of 1
@@ -76,7 +74,6 @@ def get_today_article(user_word_list, had_read_articles):
                         break
                 if result_of_generate_article == "found":  # 用于成功找到文章后及时退出外层循环
                     break
-            print(test_count)
         if result_of_generate_article != "found":  # 阅读完所有文章，或者循环3次没有找到适合的文章，则对 index+=1 进行回滚
             had_read_articles["index"] -= 1
     else:  # 生成已经阅读过的文章
