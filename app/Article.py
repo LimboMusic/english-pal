@@ -74,11 +74,12 @@ def get_today_article(user_word_list, had_read_articles):
                         break
                 if result_of_generate_article == "found":  # 用于成功找到文章后及时退出外层循环
                     break
-        if result_of_generate_article != "found":  # 阅读完所有文章，或者循环3次没有找到适合的文章，则对 index+=1 进行回滚
-            had_read_articles["index"] -= 1
+        if result_of_generate_article != "found":  # 阅读完所有文章，或者循环3次没有找到适合的文章，则放入空（“null”）
+            had_read_articles["article_ids"].append('null')
     else:  # 生成已经阅读过的文章
         d = random.choice(result)
         text_level = text_difficulty_level(d['text'], d3)
+        result_of_generate_article = "found"
 
     today_article = None
     if d:

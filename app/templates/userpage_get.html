@@ -44,14 +44,16 @@
 {#        <div class="alert alert-warning" role="alert">Congratulations! {{ message }}</div>#}
 {#    {% endfor %}#}
 
-    <a id="next_btn" class="btn btn-success" href="/{{ username }}/reset" role="button"> 下一篇 Next Article </a>
-    {% if session.get('had_read_articles') != None and session.get('had_read_articles')["index"] !=0 %}
+    {% if result_of_generate_article != "had read all articles" %}
+        <a id="next_btn" class="btn btn-success" href="/{{ username }}/reset" role="button"> 下一篇 Next Article </a>
+    {% endif %}
+    {% if session.get('had_read_articles') and session.get('had_read_articles')['index']>0 %}
         <a id="pre_btn" class="btn btn-success" href="/{{ username }}/back" role="button"> 上一篇 Previous Article </a>
     {% endif %}
 
     <p><b>阅读文章并回答问题</b></p>
     <div id="text-content">
-        {% if today_article %}
+        {% if result_of_generate_article == 'found' %}
             <div class="alert alert-success" role="alert">According to your word list, your level is <span class="badge bg-success">{{ today_article["user_level"] }}</span>  and we have chosen an article with a difficulty level of <span class="badge bg-success">{{ today_article["text_level"] }}</span> for you.</div>
                 <p class="text-muted">Article added on: {{ today_article["date"] }}</p><br/>
             <div class="p-3 mb-2 bg-light text-dark"><br/>

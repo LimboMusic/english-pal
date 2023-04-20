@@ -31,7 +31,10 @@ def user_reset(username):
     '''
     if request.method == 'GET':
         had_read_articles = session.get("had_read_articles")
-        had_read_articles["index"] += 1
+        if had_read_articles['article_ids'][-1] == "null":  # 如果当前还是“null”，则将“null”pop出来,无需index+=1
+            had_read_articles['article_ids'].pop()
+        else:  # 当前不为“null”，直接 index+=1
+            had_read_articles["index"] += 1
         session["had_read_articles"] = had_read_articles
         return redirect(url_for('user_bp.userpage', username=username))
     else:
@@ -45,10 +48,11 @@ def user_back(username):
     :return: 返回页面内容
     '''
     if request.method == 'GET':
-        if session.get("found_article"):
-            had_read_articles = session.get("had_read_articles")
-            had_read_articles["index"] -= 1
-            session["had_read_articles"] = had_read_articles
+        had_read_articles = session.get("had_read_articles")
+        had_read_articles["index"] -= 1  # 上一篇，index-=1
+        if had_read_articles['article_ids'][-1] == "null":  # 如果当前还是“null”，则将“null”pop出来
+            had_read_articles['article_ids'].pop()
+        session["had_read_articles"] = had_read_articles
         return redirect(url_for('user_bp.userpage', username=username))
 
 
@@ -137,10 +141,6 @@ def userpage(username):
             words += x[0] + ' '
         had_read_articles, today_article, result_of_generate_article = get_today_article(user_freq_record, session.get('had_read_articles'))
         session['had_read_articles'] = had_read_articles
-        if today_article is None:
-            session["found_article"] = False
-        else:
-            session["found_article"] = True
         # 通过 today_article，加载前端的显示页面
         return render_template('userpage_get.html',
                                username=username,
