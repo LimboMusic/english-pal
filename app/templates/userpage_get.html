@@ -44,9 +44,9 @@
 {#        <div class="alert alert-warning" role="alert">Congratulations! {{ message }}</div>#}
 {#    {% endfor %}#}
 
-    <a class="btn btn-success" href="/{{ username }}/reset" role="button"> 下一篇 Next Article </a>
+    <a id="next_btn" class="btn btn-success" href="/{{ username }}/reset" role="button"> 下一篇 Next Article </a>
     {% if session.get('had_read_articles') != None and session.get('had_read_articles')["index"] !=0 %}
-        <a class="btn btn-success" href="/{{ username }}/back" role="button"> 上一篇 Previous Article </a>
+        <a id="pre_btn" class="btn btn-success" href="/{{ username }}/back" role="button"> 上一篇 Previous Article </a>
     {% endif %}
 
     <p><b>阅读文章并回答问题</b></p>

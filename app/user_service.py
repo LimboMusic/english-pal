@@ -45,9 +45,10 @@ def user_back(username):
     :return: 返回页面内容
     '''
     if request.method == 'GET':
-        had_read_articles = session.get("had_read_articles")
-        had_read_articles["index"] -= 1
-        session["had_read_articles"] = had_read_articles
+        if session.get("found_article"):
+            had_read_articles = session.get("had_read_articles")
+            had_read_articles["index"] -= 1
+            session["had_read_articles"] = had_read_articles
         return redirect(url_for('user_bp.userpage', username=username))
 
 
@@ -105,7 +106,6 @@ def userpage(username):
     :return: 返回用户界面
     '''
     # 未登录，跳转到未登录界面
-    print("123123")
     if not session.get('logged_in'):
         return render_template('not_login.html')
 
@@ -137,6 +137,10 @@ def userpage(username):
             words += x[0] + ' '
         had_read_articles, today_article = get_today_article(user_freq_record, session.get('had_read_articles'))
         session['had_read_articles'] = had_read_articles
+        if today_article is None:
+            session["found_article"] = False
+        else:
+            session["found_article"] = True
         # 通过 today_article，加载前端的显示页面
         return render_template('userpage_get.html',
                                username=username,
