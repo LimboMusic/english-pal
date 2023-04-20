@@ -135,7 +135,7 @@ def userpage(username):
         words = ''
         for x in lst3:
             words += x[0] + ' '
-        had_read_articles, today_article = get_today_article(user_freq_record, session.get('had_read_articles'))
+        had_read_articles, today_article, result_of_generate_article = get_today_article(user_freq_record, session.get('had_read_articles'))
         session['had_read_articles'] = had_read_articles
         if today_article is None:
             session["found_article"] = False
@@ -147,6 +147,7 @@ def userpage(username):
                                session=session,
                                # flashed_messages=get_flashed_messages(), 仅有删除单词的时候使用到flash，而删除单词是异步执行，这里的信息提示是同步执行，所以就没有存在的必要了
                                today_article=today_article,
+                               result_of_generate_article=result_of_generate_article,
                                d_len=len(d),
                                lst3=lst3,
                                yml=Yaml.yml,

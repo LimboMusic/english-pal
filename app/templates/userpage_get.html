@@ -71,9 +71,13 @@
                 <button onclick="toggle_visibility('answer');">ANSWER</button>
                 <div id="answer" style="display:none;">{{ today_article['answer'] }}</div><br/>
             </div>
-        {% else %}
+        {% elif result_of_generate_article == "not found" %}
             <div class="alert alert-success" role="alert">
                 <p class="text-muted"><span class="badge bg-success">Notes:</span><br>No article is currently available for you. You can try again a few times or mark new words in the passage to improve your level.</p>
+            </div>
+        {% elif result_of_generate_article == "had read all articles" %}
+            <div class="alert alert-success" role="alert">
+                <p class="text-muted"><span class="badge bg-success">Notes:</span><br>You've read all the articles.</p>
             </div>
         {% endif %}
     </div>
