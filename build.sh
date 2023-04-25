@@ -3,6 +3,10 @@
 DEPLOYMENT_DIR=/home/lanhui/englishpal2/EnglishPal
 cd $DEPLOYMENT_DIR
 
+# Install dependencies
+
+pip3 install -r requirements.txt
+
 # Stop service
 sudo docker stop EnglishPal
 sudo docker rm EnglishPal
