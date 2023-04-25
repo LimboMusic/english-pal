@@ -68,7 +68,7 @@ def save_frequency_to_pickle(d, pickle_fname):
     d2 = {}
     for k in d:
         if not k in exclusion_lst and not k.isnumeric() and not len(k) < 2:
-            d2[k] = list(sorted(set(d[k])))
+            d2[k] = list(sorted(d[k])) # 原先这里是d2[k] = list(sorted(set(d[k])))
     pickle.dump(d2, f)
     f.close()
 
