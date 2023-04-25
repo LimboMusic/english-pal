@@ -42,6 +42,9 @@ def get_today_article(user_word_list, had_read_articles):
     if had_read_articles["index"] > len(had_read_articles["article_ids"])-1:  # 生成新的文章，因此查找所有的文章
         rq.instructions("SELECT * FROM article")
     else:  # 生成阅读过的文章，因此查询指定 article_id 的文章
+        if had_read_articles["article_ids"][had_read_articles["index"]] == 'null':  # 可能因为直接刷新页面导致直接去查询了'null'，因此当刷新的页面的时候，需要直接进行“上一篇”操作
+            had_read_articles["index"] -= 1
+            had_read_articles["article_ids"].pop()
         rq.instructions('SELECT * FROM article WHERE article_id=%d' % (had_read_articles["article_ids"][had_read_articles["index"]]))
     rq.do()
     result = rq.get_results()
