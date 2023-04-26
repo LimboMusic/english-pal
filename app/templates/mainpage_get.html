@@ -23,7 +23,7 @@
     <div class="container-fluid">
         <p><b><font size="+3" color="red">English Pal - Learn English smartly!</font></b></p>
         {% if session['logged_in'] %}
-            <a href="/{{ session['username'] }}">{{ session['username'] }}</a>
+            <a href="/{{ session['username'] }}/userpage">{{ session['username'] }}</a>
             {% if session['username'] == admin_name %}
             <a href="/admin">管理</a></p>
             {% endif %}
