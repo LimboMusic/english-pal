@@ -52,7 +52,7 @@
     {% if result_of_generate_article != "had read all articles" %}
         <a id="next_btn" class="btn btn-success" href="/{{ username }}/reset" role="button"> 下一篇 Next Article </a>
     {% endif %}
-    {% if session.get('had_read_articles') and session.get('had_read_articles')['index']>0 %}
+    {% if session.get('visited_articles') and session.get('visited_articles')['index']>0 %}
         <a id="pre_btn" class="btn btn-success" href="/{{ username }}/back" role="button"> 上一篇 Previous Article </a>
     {% endif %}
 

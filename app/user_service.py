@@ -30,12 +30,12 @@ def user_reset(username):
     :return: 返回页面内容
     '''
     if request.method == 'GET':
-        had_read_articles = session.get("had_read_articles")
-        if had_read_articles['article_ids'][-1] == "null":  # 如果当前还是“null”，则将“null”pop出来,无需index+=1
-            had_read_articles['article_ids'].pop()
+        visited_articles = session.get("visited_articles")
+        if visited_articles['article_ids'][-1] == "null":  # 如果当前还是“null”，则将“null”pop出来,无需index+=1
+            visited_articles['article_ids'].pop()
         else:  # 当前不为“null”，直接 index+=1
-            had_read_articles["index"] += 1
-        session["had_read_articles"] = had_read_articles
+            visited_articles["index"] += 1
+        session["visited_articles"] = visited_articles
         return redirect(url_for('user_bp.userpage', username=username))
     else:
         return 'Under construction'
@@ -48,11 +48,11 @@ def user_back(username):
     :return: 返回页面内容
     '''
     if request.method == 'GET':
-        had_read_articles = session.get("had_read_articles")
-        had_read_articles["index"] -= 1  # 上一篇，index-=1
-        if had_read_articles['article_ids'][-1] == "null":  # 如果当前还是“null”，则将“null”pop出来
-            had_read_articles['article_ids'].pop()
-        session["had_read_articles"] = had_read_articles
+        visited_articles = session.get("visited_articles")
+        visited_articles["index"] -= 1  # 上一篇，index-=1
+        if visited_articles['article_ids'][-1] == "null":  # 如果当前还是“null”，则将“null”pop出来
+            visited_articles['article_ids'].pop()
+        session["visited_articles"] = visited_articles
         return redirect(url_for('user_bp.userpage', username=username))
 
 
@@ -139,8 +139,8 @@ def userpage(username):
         words = ''
         for x in lst3:
             words += x[0] + ' '
-        had_read_articles, today_article, result_of_generate_article = get_today_article(user_freq_record, session.get('had_read_articles'))
-        session['had_read_articles'] = had_read_articles
+        visited_articles, today_article, result_of_generate_article = get_today_article(user_freq_record, session.get('visited_articles'))
+        session['visited_articles'] = visited_articles
         # 通过 today_article，加载前端的显示页面
         return render_template('userpage_get.html',
                                admin_name=ADMIN_NAME,

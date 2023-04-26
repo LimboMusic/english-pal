@@ -37,7 +37,7 @@ def signup():
                 session[username] = username
                 session['username'] = username
                 session['expiry_date'] = get_expiry_date(username)
-                session['had_read_articles'] = None
+                session['visited_articles'] = None
                 return jsonify({'status': '2'})
             else:
                 return jsonify({'status': '1'})
@@ -66,7 +66,7 @@ def login():
             session['username'] = username
             user_expiry_date = get_expiry_date(username)
             session['expiry_date'] = user_expiry_date
-            session['had_read_articles'] = None
+            session['visited_articles'] = None
             return jsonify({'status': '1'})
         else:
             return jsonify({'status': '0'})
