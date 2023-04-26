@@ -30,9 +30,12 @@ def user_reset(username):
     :return: 返回页面内容
     '''
     if request.method == 'GET':
-        existing_articles = session.get("existing_articles")
-        existing_articles["index"] += 1
-        session["existing_articles"] = existing_articles
+        had_read_articles = session.get("had_read_articles")
+        if had_read_articles['article_ids'][-1] == "null":  # 如果当前还是“null”，则将“null”pop出来,无需index+=1
+            had_read_articles['article_ids'].pop()
+        else:  # 当前不为“null”，直接 index+=1
+            had_read_articles["index"] += 1
+        session["had_read_articles"] = had_read_articles
         return redirect(url_for('user_bp.userpage', username=username))
     else:
         return 'Under construction'
@@ -45,9 +48,11 @@ def user_back(username):
     :return: 返回页面内容
     '''
     if request.method == 'GET':
-        existing_articles = session.get("existing_articles")
-        existing_articles["index"] -= 1
-        session["existing_articles"] = existing_articles
+        had_read_articles = session.get("had_read_articles")
+        had_read_articles["index"] -= 1  # 上一篇，index-=1
+        if had_read_articles['article_ids'][-1] == "null":  # 如果当前还是“null”，则将“null”pop出来
+            had_read_articles['article_ids'].pop()
+        session["had_read_articles"] = had_read_articles
         return redirect(url_for('user_bp.userpage', username=username))
 
 
@@ -97,7 +102,7 @@ def deleteword(username, word):
     return "success"
 
 
-@userService.route("/<username>", methods=['GET', 'POST'])
+@userService.route("/<username>/userpage", methods=['GET', 'POST'])
 def userpage(username):
     '''
     用户界面
@@ -134,8 +139,8 @@ def userpage(username):
         words = ''
         for x in lst3:
             words += x[0] + ' '
-        existing_articles, today_article = get_today_article(user_freq_record, session.get('existing_articles'))
-        session['existing_articles'] = existing_articles
+        had_read_articles, today_article, result_of_generate_article = get_today_article(user_freq_record, session.get('had_read_articles'))
+        session['had_read_articles'] = had_read_articles
         # 通过 today_article，加载前端的显示页面
         return render_template('userpage_get.html',
                                admin_name=ADMIN_NAME,
@@ -143,6 +148,7 @@ def userpage(username):
                                session=session,
                                # flashed_messages=get_flashed_messages(), 仅有删除单词的时候使用到flash，而删除单词是异步执行，这里的信息提示是同步执行，所以就没有存在的必要了
                                today_article=today_article,
+                               result_of_generate_article=result_of_generate_article,
                                d_len=len(d),
                                lst3=lst3,
                                yml=Yaml.yml,

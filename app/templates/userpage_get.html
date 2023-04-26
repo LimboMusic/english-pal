@@ -37,24 +37,28 @@
 <body>
 <div class="container-fluid">
     <p><b>English Pal for <font id="username" color="red">{{ username }}</font></b>
+
         {% if username ==  admin_name %}
         <a class="btn btn-secondary" href="/admin" role="button" onclick="stopRead()">管理</a>
         {% endif %}
-        <a class="btn btn-secondary" href="/logout" role="button" onclick="stopRead()">退出</a>
+        <a id="quit" class="btn btn-secondary" href="/logout" role="button" onclick="stopRead()">退出</a>
         <a class="btn btn-secondary" href="/reset" role="button" onclick="stopRead()">重设密码</a>
+
     </p>
 {#    {% for message in flashed_messages %}#} {# 根据user_service.userpage,取消了参数flashed_messages，因此注释了这段代码 #}
 {#        <div class="alert alert-warning" role="alert">Congratulations! {{ message }}</div>#}
 {#    {% endfor %}#}
 
-    <a class="btn btn-success" href="/{{ username }}/reset" role="button"> 下一篇 Next Article </a>
-    {% if session.get('existing_articles') != None and session.get('existing_articles')["index"] !=0 %}
-        <a class="btn btn-success" href="/{{ username }}/back" role="button"> 上一篇 Previous Article </a>
+    {% if result_of_generate_article != "had read all articles" %}
+        <a id="next_btn" class="btn btn-success" href="/{{ username }}/reset" role="button"> 下一篇 Next Article </a>
+    {% endif %}
+    {% if session.get('had_read_articles') and session.get('had_read_articles')['index']>0 %}
+        <a id="pre_btn" class="btn btn-success" href="/{{ username }}/back" role="button"> 上一篇 Previous Article </a>
     {% endif %}
 
     <p><b>阅读文章并回答问题</b></p>
     <div id="text-content">
-        {% if today_article %}
+        {% if result_of_generate_article == 'found' %}
             <div class="alert alert-success" role="alert">According to your word list, your level is <span class="badge bg-success">{{ today_article["user_level"] }}</span>  and we have chosen an article with a difficulty level of <span class="badge bg-success">{{ today_article["text_level"] }}</span> for you.</div>
                 <p class="text-muted">Article added on: {{ today_article["date"] }}</p><br/>
             <div class="p-3 mb-2 bg-light text-dark"><br/>
@@ -74,9 +78,13 @@
                 <button onclick="toggle_visibility('answer');">ANSWER</button>
                 <div id="answer" style="display:none;">{{ today_article['answer'] }}</div><br/>
             </div>
-        {% else %}
+        {% elif result_of_generate_article == "not found" %}
             <div class="alert alert-success" role="alert">
                 <p class="text-muted"><span class="badge bg-success">Notes:</span><br>No article is currently available for you. You can try again a few times or mark new words in the passage to improve your level.</p>
+            </div>
+        {% elif result_of_generate_article == "had read all articles" %}
+            <div class="alert alert-success" role="alert">
+                <p class="text-muted"><span class="badge bg-success">Notes:</span><br>You've read all the articles.</p>
             </div>
         {% endif %}
     </div>
@@ -93,7 +101,7 @@
         </div>
     </div>
     <p><b>收集生词吧</b> （可以在正文中划词，也可以复制黏贴）</p>
-    <form method="post" action="/{{ username }}">
+    <form method="post" action="/{{ username }}/userpage">
         <textarea name="content" id="selected-words" rows="10" cols="120"></textarea><br/>
         <input type="submit" value="把生词加入我的生词库"/>
         <input type="reset" value="清除"/>
