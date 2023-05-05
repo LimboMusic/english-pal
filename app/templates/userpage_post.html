@@ -20,7 +20,7 @@
     <title>EnglishPal Study Room for {{username}}</title>
 </head>
 <body>
-     <p>勾选不认识的单词</p>
+     <p>取消勾选认识的单词</p>
       <form method="post" action="/{{username}}/mark">
        <input type="submit" name="add-btn" value="加入我的生词簿"/>
        {% for x in lst %}
@@ -30,7 +30,7 @@
             :
             <a href='http://youdao.com/w/eng/{{word}}/#keyfrom=dict2.index' title={{word}}>{{word}}</a>
             ({{x[1]}})
-            <input type="checkbox" name="marked" value="{{word}}">
+            <input type="checkbox" name="marked" value="{{word}}" checked>
         </p>
 
        {% endfor %}

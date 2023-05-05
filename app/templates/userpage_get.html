@@ -19,24 +19,67 @@
     {% endif %}
 
     <title>EnglishPal Study Room for {{ username }}</title>
+
+    <style>
+        .shaking {
+            animation: shakes 1600ms ease-in-out;
+        }
+
+        @keyframes shakes {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 50% { transform: translate3d(+2px, 0, 0); }
+            30%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(+4px, 0, 0); }
+            50% { transform: translate3d(-4px, 0, 0); }
+        }
+    </style>
 </head>
 <body>
 <div class="container-fluid">
     <p><b>English Pal for <font id="username" color="red">{{ username }}</font></b>
-        <a class="btn btn-secondary" href="/logout" role="button">退出</a>
-        <a class="btn btn-secondary" href="/reset" role="button">重设密码</a>
+        {% if username ==  admin_name %}
+        <a class="btn btn-secondary" href="/admin" role="button" onclick="stopRead()">管理</a>
+        {% endif %}
+        <a class="btn btn-secondary" href="/logout" role="button" onclick="stopRead()">退出</a>
+        <a class="btn btn-secondary" href="/reset" role="button" onclick="stopRead()">重设密码</a>
     </p>
-    {{ flashed_messages|safe }}
+{#    {% for message in flashed_messages %}#} {# 根据user_service.userpage,取消了参数flashed_messages，因此注释了这段代码 #}
+{#        <div class="alert alert-warning" role="alert">Congratulations! {{ message }}</div>#}
+{#    {% endfor %}#}
 
-    <a class="btn btn-success" href="/{{ username }}/reset" role="button"> 下一篇 Next Article </a>    
-    {% if session.get('articleID') != session.get('old_articleID') %}
-        {% if session.get('old_articleID') != None %}
-            <a class="btn btn-success" href="/{{ username }}/back" role="button"> 上一篇 Previous Article </a>
-        {% endif%}
+    <a class="btn btn-success" href="/{{ username }}/reset" role="button"> 下一篇 Next Article </a>
+    {% if session.get('existing_articles') != None and session.get('existing_articles')["index"] !=0 %}
+        <a class="btn btn-success" href="/{{ username }}/back" role="button"> 上一篇 Previous Article </a>
     {% endif %}
 
     <p><b>阅读文章并回答问题</b></p>
-    <div id="text-content">{{ today_article|safe }}</div>
+    <div id="text-content">
+        {% if today_article %}
+            <div class="alert alert-success" role="alert">According to your word list, your level is <span class="badge bg-success">{{ today_article["user_level"] }}</span>  and we have chosen an article with a difficulty level of <span class="badge bg-success">{{ today_article["text_level"] }}</span> for you.</div>
+                <p class="text-muted">Article added on: {{ today_article["date"] }}</p><br/>
+            <div class="p-3 mb-2 bg-light text-dark"><br/>
+            <p class="display-5">{{ today_article["article_title"] }}</p><br/>
+            <p class="lead"><font id="article" size=2>{{ today_article["article_body"] }}</font></p><br/>
+            <p><small class="text-muted">{{ today_article['source'] }}</small></p><br/>
+            <p><b>{{ today_article['question'] }}</b></p><br/>
+                <script type="text/javascript">
+                    function toggle_visibility(id) { {# https://css-tricks.com/snippets/javascript/showhide-element/#}
+                        const e = document.getElementById(id);
+                        if(e.style.display === 'block')
+                            e.style.display = 'none';
+                        else
+                            e.style.display = 'block';
+                    }
+                </script>
+                <button onclick="toggle_visibility('answer');">ANSWER</button>
+                <div id="answer" style="display:none;">{{ today_article['answer'] }}</div><br/>
+            </div>
+        {% else %}
+            <div class="alert alert-success" role="alert">
+                <p class="text-muted"><span class="badge bg-success">Notes:</span><br>No article is currently available for you. You can try again a few times or mark new words in the passage to improve your level.</p>
+            </div>
+        {% endif %}
+    </div>
 
     <input type="checkbox" onclick="toggleHighlighting()" checked/>生词高亮
     <input type="checkbox" onclick="onReadClick()" checked/>大声朗读
@@ -46,9 +89,9 @@
             <div class="sliderValue">
                 <span id="rangeValue">1×</span>
             </div>
-        <input type="range" id="rangeComponent" min="0.5" max="2" value="1" step="0.25" "/>
+            <input type="range" id="rangeComponent" min="0.5" max="2" value="1" step="0.25"/>
         </div>
-    </div>    
+    </div>
     <p><b>收集生词吧</b> （可以在正文中划词，也可以复制黏贴）</p>
     <form method="post" action="/{{ username }}">
         <textarea name="content" id="selected-words" rows="10" cols="120"></textarea><br/>
@@ -67,22 +110,30 @@
     {% endif %}
 
     {% if d_len > 0 %}
-        <p><b>我的生词簿</b></p>
-        {% for x in lst3 %}
-            {% set word = x[0] %}
-            {% set freq = x[1] %}
-            {% if session.get('thisWord') == x[0] and session.get('time') == 1 %}
-                <a name="aaa"></a>
-            {% endif %}
-            <p id='p_{{ word }}' class="new-word" >
-                <a id="word_{{ word }}"  class="btn btn-light" href='http://youdao.com/w/eng/{{ word }}/#keyfrom=dict2.index'
-                   role="button">{{ word }}</a>
-                ( <a id="freq_{{ word }}" title="{{ word }}">{{ freq }}</a> )
-                <a class="btn btn-success" onclick="familiar('{{ word }}')" role="button">熟悉</a>
-                <a class="btn btn-warning" onclick="unfamiliar('{{ word }}')" role="button">不熟悉</a>
-                <a class="btn btn-danger" onclick="delete_word('{{ word }}')" role="button">删除</a>
-            </p>
-        {% endfor %}
+        <p>
+            <b>我的生词簿</b> 
+            <label for="move_dynamiclly">
+                <input type="checkbox" name="move_dynamiclly" id="move_dynamiclly" checked>
+                允许动态调整顺序
+            </label>
+        </p>
+        <a name="aaa"></a>
+        <div class="word-container">
+            {% for x in lst3 %}
+                {% set word = x[0] %}
+                {% set freq = x[1] %}
+                {% if session.get('thisWord') == x[0] and session.get('time') == 1 %}
+                {% endif %}
+                <p id='p_{{ word }}' class="new-word" >
+                    <a id="word_{{ word }}"  class="btn btn-light" href='http://youdao.com/w/eng/{{ word }}/#keyfrom=dict2.index'
+                    role="button">{{ word }}</a>
+                    ( <a id="freq_{{ word }}" title="{{ word }}">{{ freq }}</a> )
+                    <a class="btn btn-success" onclick="familiar('{{ word }}')" role="button">熟悉</a>
+                    <a class="btn btn-warning" onclick="unfamiliar('{{ word }}')" role="button">不熟悉</a>
+                    <a class="btn btn-danger" onclick="delete_word('{{ word }}')" role="button">删除</a>
+                </p>
+            {% endfor %}
+        </div>
         <input id="selected-words2" type="hidden" value="{{ words }}">
     {% endif %}
 </div>
@@ -95,9 +146,9 @@
 </body>
 <style>
     mark {
-    color: #{{ yml['highlight']['color'] }};
-    background-color: rgba(0,0,0,0);
-}
+        color: #{{ yml['highlight']['color'] }};
+        background-color: rgba(0, 0, 0, 0);
+    }
 </style>
 
 </html>

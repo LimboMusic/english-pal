@@ -39,7 +39,7 @@ def file2str(fname):#文件转字符
 
 
 def remove_punctuation(s): # 这里是s是形参 (parameter)。函数被调用时才给s赋值。
-    special_characters = '_©~=+[]*&$%^@.,?!:;#()"“”—‘’' # 把里面的字符都去掉
+    special_characters = '\_©~<=>+-/[]*&$%^@.,?!:;#()"“”—‘’{}|' # 把里面的字符都去掉
     for c in special_characters:
         s = s.replace(c, ' ') # 防止出现把 apple,apple 移掉逗号后变成 appleapple 情况
     s = s.replace('--', ' ')
@@ -70,7 +70,7 @@ def sort_in_ascending_order(lst):# 单词按频率降序排列
     return lst2
 
 
-def make_html_page(lst, fname):
+def make_html_page(lst, fname):  # 只是在wordfreqCMD.py中的main函数中调用，所以不做修改
     '''
     功能：把lst的信息存到fname中，以html格式。
     '''
