@@ -42,17 +42,12 @@ function highLight() {
 
             //修改代码
             let articleContent_fb = articleContent;  //文章副本
-            let count = 1000;  //简单计数器，防止陷入死循环。
             while(articleContent_fb.toLowerCase().indexOf(list[i].toLowerCase()) !== -1 && list[i]!=""){
-                //针对同一篇文章中可能存在相同单词的不同大小写问题，采用while循环判断副本中是否还存在匹配单词。
-
-                count--;
-                if(count <= 0)break;   //TimeOut!
-
                 //找到副本中和list[i]匹配的第一个单词(第一种匹配情况),并赋值给list[i]。
-                list[i] = articleContent_fb.substr(articleContent_fb.toLowerCase().indexOf(list[i].toLowerCase()),list[i].length);
+                const index = articleContent_fb.toLowerCase().indexOf(list[i].toLowerCase());
+                list[i] = articleContent_fb.substring(index, index + list[i].length);
 
-                articleContent_fb = articleContent_fb.replace(list[i],""); //删除副本中和list[i]匹配的单词
+                articleContent_fb = articleContent_fb.substring(index + list[i].length);    // 使用副本中list[i]之后的子串替换掉副本
                 articleContent = articleContent.replace(new RegExp("\\b"+list[i]+"\\b","g"),"<mark>" + list[i] + "</mark>");
             }
         }
