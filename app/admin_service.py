@@ -91,10 +91,7 @@ def article():
         question = data.get("question", "")
         level = data.get("level", "4")
         if content:
-            try:  # check level
-                if level not in ['1', '2', '3', '4']:
-                    raise ValueError
-            except ValueError:
+            if level not in ['1', '2', '3', '4']:
                 return "Level must be between 1 and 4."
             add_article(content, source, level, question)
             _update_context()
