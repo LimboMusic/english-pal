@@ -50,22 +50,22 @@
 {#    {% endfor %}#}
 
     {% if result_of_generate_article != "had read all articles" %}
-        <a id="next_btn" class="btn btn-success" href="/{{ username }}/reset" role="button"> 下一篇 Next Article </a>
+        <button class="btn btn-success" id="load_next_article" onclick="load_next_article()"> 下一篇 Next Article </button>
     {% endif %}
     {% if session.get('visited_articles') and session.get('visited_articles')['index']>0 %}
-        <a id="pre_btn" class="btn btn-success" href="/{{ username }}/back" role="button"> 上一篇 Previous Article </a>
+        <button class="btn btn-success" id="load_pre_article" onclick="load_pre_article()"> 上一篇 Previous Article </button>
     {% endif %}
 
     <p><b>阅读文章并回答问题</b></p>
     <div id="text-content">
         {% if result_of_generate_article == 'found' %}
-            <div class="alert alert-success" role="alert">According to your word list, your level is <span class="badge bg-success">{{ today_article["user_level"] }}</span>  and we have chosen an article with a difficulty level of <span class="badge bg-success">{{ today_article["text_level"] }}</span> for you.</div>
-                <p class="text-muted">Article added on: {{ today_article["date"] }}</p><br/>
+            <div class="alert alert-success" role="alert">According to your word list, your level is <span class="badge bg-success" id="user-level">{{ today_article["user_level"] }}</span>  and we have chosen an article with a difficulty level of <span class="badge bg-success" id="text_level">{{ today_article["text_level"] }}</span> for you.</div>
+                <p class="text-muted" id="date">Article added on: {{ today_article["date"] }}</p><br/>
             <div class="p-3 mb-2 bg-light text-dark"><br/>
-            <p class="display-5">{{ today_article["article_title"] }}</p><br/>
+            <p class="display-5" id="article_title">{{ today_article["article_title"] }}</p><br/>
             <p class="lead"><font id="article" size=2>{{ today_article["article_body"] }}</font></p><br/>
-            <p><small class="text-muted">{{ today_article['source'] }}</small></p><br/>
-            <p><b>{{ today_article['question'] }}</b></p><br/>
+            <p><small class="text-muted" id="source">{{ today_article['source'] }}</small></p><br/>
+            <p><b id="question">{{ today_article['question'] }}</b></p><br/>
                 <script type="text/javascript">
                     function toggle_visibility(id) { {# https://css-tricks.com/snippets/javascript/showhide-element/#}
                         const e = document.getElementById(id);
@@ -151,6 +151,50 @@
         <script src="{{ js }}"></script>
     {% endfor %}
 {% endif %}
+<script>
+    function load_next_article(){
+        $.ajax({
+            url: '/get_next_article/{{username}}',
+            dataType: 'json',
+            success: function(data) {
+
+                // 更新页面内容
+                    if(data){
+                        $('#user_level').html(data['user_level']);
+                        $('#text_level').html(data["text_level"]);
+                        $('#date').html('Article added on: '+data["date"]);
+                        $('#article_title').html(data["article_title"]);
+                        $('#article').html(data["article_body"]);
+                        $('#source').html(data['source']);
+                        $('#question').html(data["question"]);
+                        $('#answer').html(data["answer"]);
+                    }
+
+            }
+        });
+
+    }
+    function load_pre_article(){
+        $.ajax({
+            url: '/get_pre_article/{{username}}',
+            dataType: 'json',
+            success: function(data) {
+                // 更新页面内容
+                if(data){
+                    $('#user_level').html(data['user_level']);
+                    $('#text_level').html(data["text_level"]);
+                    $('#date').html('Article added on: '+data["date"]);
+                    $('#article_title').html(data["article_title"]);
+                    $('#article').html(data["article_body"]);
+                    $('#source').html(data['source']);
+                    $('#question').html(data["question"]);
+                    $('#answer').html(data["answer"]);
+                }
+            }
+        });
+        console.info({{visited_articles}})
+    }
+</script>
 </body>
 <style>
     mark {

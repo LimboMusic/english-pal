@@ -21,14 +21,10 @@ userService = Blueprint("user_bp", __name__)
 path_prefix = '/var/www/wordfreq/wordfreq/'
 path_prefix = './'  # comment this line in deployment
 
-
-@userService.route("/<username>/reset", methods=['GET', 'POST'])
-def user_reset(username):
-    '''
-    用户界面
-    :param username: 用户名
-    :return: 返回页面内容
-    '''
+@userService.route("/get_next_article/<username>",methods=['GET','POST'])
+def get_next_article(username):
+    user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
+    session['old_articleID'] = session.get('articleID')
     if request.method == 'GET':
         visited_articles = session.get("visited_articles")
         if visited_articles['article_ids'][-1] == "null":  # 如果当前还是“null”，则将“null”pop出来,无需index+=1
@@ -36,26 +32,22 @@ def user_reset(username):
         else:  # 当前不为“null”，直接 index+=1
             visited_articles["index"] += 1
         session["visited_articles"] = visited_articles
-        return redirect(url_for('user_bp.userpage', username=username))
+        visited_articles, data, result_of_generate_article = get_today_article(user_freq_record, session.get('visited_articles'))
     else:
         return 'Under construction'
+    return json.dumps(data)
 
-@userService.route("/<username>/back", methods=['GET'])
-def user_back(username):
-    '''
-    用户界面
-    :param username: 用户名
-    :return: 返回页面内容
-    '''
+@userService.route("/get_pre_article/<username>",methods=['GET'])
+def get_pre_article(username):
+    user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
     if request.method == 'GET':
         visited_articles = session.get("visited_articles")
         visited_articles["index"] -= 1  # 上一篇，index-=1
         if visited_articles['article_ids'][-1] == "null":  # 如果当前还是“null”，则将“null”pop出来
             visited_articles['article_ids'].pop()
         session["visited_articles"] = visited_articles
-        return redirect(url_for('user_bp.userpage', username=username))
-
-
+        visited_articles, data, result_of_generate_article = get_today_article(user_freq_record, session.get('visited_articles'))
+        return json.dumps(data)
 
 @userService.route("/<username>/<word>/unfamiliar", methods=['GET', 'POST'])
 def unfamiliar(username, word):
