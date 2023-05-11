@@ -32,7 +32,12 @@ def get_next_article(username):
         else:  # 当前不为“null”，直接 index+=1
             visited_articles["index"] += 1
         session["visited_articles"] = visited_articles
-        visited_articles, data, result_of_generate_article = get_today_article(user_freq_record, session.get('visited_articles'))
+        visited_articles, today_article, result_of_generate_article = get_today_article(user_freq_record, session.get('visited_articles'))
+        data = {
+            'visited_articles': visited_articles,
+            'today_article': today_article,
+            'result_of_generate_article': result_of_generate_article
+        }
     else:
         return 'Under construction'
     return json.dumps(data)
@@ -42,11 +47,19 @@ def get_pre_article(username):
     user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
     if request.method == 'GET':
         visited_articles = session.get("visited_articles")
-        visited_articles["index"] -= 1  # 上一篇，index-=1
-        if visited_articles['article_ids'][-1] == "null":  # 如果当前还是“null”，则将“null”pop出来
-            visited_articles['article_ids'].pop()
-        session["visited_articles"] = visited_articles
-        visited_articles, data, result_of_generate_article = get_today_article(user_freq_record, session.get('visited_articles'))
+        if(visited_articles["index"]==0):
+            data=''
+        else:
+            visited_articles["index"] -= 1  # 上一篇，index-=1
+            if visited_articles['article_ids'][-1] == "null":  # 如果当前还是“null”，则将“null”pop出来
+                visited_articles['article_ids'].pop()
+            session["visited_articles"] = visited_articles
+            visited_articles, today_article, result_of_generate_article = get_today_article(user_freq_record, session.get('visited_articles'))
+            data = {
+                'visited_articles': visited_articles,
+                'today_article': today_article,
+                'result_of_generate_article':result_of_generate_article
+            }
         return json.dumps(data)
 
 @userService.route("/<username>/<word>/unfamiliar", methods=['GET', 'POST'])
@@ -145,10 +158,6 @@ def userpage(username):
                                lst3=lst3,
                                yml=Yaml.yml,
                                words=words)
-
-
-
-
 
 @userService.route("/<username>/mark", methods=['GET', 'POST'])
 def user_mark_word(username):
