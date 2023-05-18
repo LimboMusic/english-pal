@@ -7,7 +7,7 @@ import random, glob
 import hashlib
 from datetime import datetime
 from flask import Flask, request, redirect, render_template, url_for, session, abort, flash, get_flashed_messages
-from difficulty import get_difficulty_level, text_difficulty_level, user_difficulty_level
+from difficulty import get_difficulty_level_for_user, text_difficulty_level, user_difficulty_level
 
 
 path_prefix = '/var/www/wordfreq/wordfreq/'
@@ -53,7 +53,7 @@ def get_today_article(user_word_list, visited_articles):
     # Choose article according to reader's level
     d1 = load_freq_history(path_prefix + 'static/frequency/frequency.p')
     d2 = load_freq_history(path_prefix + 'static/words_and_tests.p')
-    d3 = get_difficulty_level(d1, d2)
+    d3 = get_difficulty_level_for_user(d1, d2)
 
     d = None
     result_of_generate_article = "not found"

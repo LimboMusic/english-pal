@@ -8,6 +8,7 @@
 import pickle
 import math
 from wordfreqCMD import remove_punctuation, freq, sort_in_descending_order, sort_in_ascending_order
+import snowballstemmer
 
 
 def load_record(pickle_fname):
@@ -17,41 +18,49 @@ def load_record(pickle_fname):
     return d
 
 
-def difficulty_level_from_frequency(word, d):
-    level = 1
-    if not word in d:
-        return level
-    
-    if 'what' in d:
-        ratio = (d['what']+1)/(d[word]+1) # what is a frequent word
-        level = math.log( max(ratio, 1), 2)
+def convert_test_type_to_difficulty_level(d):
+    """
+    对原本的单词库中的单词进行难度评级
+    :param d: 存储了单词库pickle文件中的单词的字典
+    :return:
+    """
+    result = {}
+    L = list(d.keys())  # in d, we have test types (e.g., CET4,CET6,BBC) for each word
 
-    level = min(level, 8) 
-    return level
+    for k in L:
+        if 'CET4' in d[k]:
+            result[k] = 4  # CET4 word has level 4
+        elif 'OXFORD3000' in d[k]:
+            result[k] = 5
+        elif 'CET6' in d[k] or 'GRADUATE' in d[k]:
+            result[k] = 6
+        elif 'OXFORD5000' in d[k] or 'IELTS' in d[k]:
+            result[k] = 7
+        elif 'BBC' in d[k]:
+            result[k] = 8
+
+    return result  # {'apple': 4, ...}
 
 
-def get_difficulty_level(d1, d2):
-    d = {}
-    L = list(d1.keys())  # in d1, we have freuqence for each word
-    L2 = list(d2.keys()) # in d2, we have test types (e.g., CET4,CET6,BBC) for each word
-    L.extend(L2)
-    L3 = list(set(L)) # L3 contains all words
-    for k in L3:
-        if k in d2:
-            if 'CET4' in d2[k]:
-                d[k] = 4 # CET4 word has level 4
-            elif 'CET6' in d2[k]:
-                d[k] = 6
-            elif 'BBC' in d2[k]:
-                d[k] = 8
-                if k in d1: # BBC could contain easy words that are not in CET4 or CET6.  So 4 is not reasonable.  Recompute difficulty level.
-                    d[k] = min(difficulty_level_from_frequency(k, d1), d[k])
-        elif k in d1:
-            d[k] = difficulty_level_from_frequency(k, d1)
+def get_difficulty_level_for_user(d1, d2):
+    """
+    d2 来自于词库的35511个已标记单词
+    d1 用户不会的词
+    在d2的后面添加单词，没有新建一个新的字典
+    """
+    d2 = convert_test_type_to_difficulty_level(d2)  # 根据d2的标记评级{'apple': 4, 'abandon': 4, ...}
+    stem = snowballstemmer.stemmer('english')
 
-    return d
+    for k in d1:  # 用户的词
+        if k in d2:  # 如果用户的词以原型的形式存在于词库d2中
+            continue  # 无需评级，跳过
+        elif stem.stemWord(k) in d2:  # 如果用户的词的词根存在于词库d2的词根库中
+            d2[k] = d2[stem.stemWord(k)]  # 按照词根进行评级
+            break
+        else:
+            d2[k] = 3  # 如果k的词根都不在，那么就当认为是3级
+    return d2
 
-        
 
 def revert_dict(d):
     '''
@@ -62,12 +71,13 @@ def revert_dict(d):
     for k in d:
         if type(d[k]) is list:  # d[k] is a list of dates.
             lst = d[k]
-        elif type(d[k]) is int: # for backward compatibility.  d was sth like {'word':1}.  The value d[k] is not a list of dates, but a number representing how frequent this word had been added to the new word book. 
+        elif type(d[
+                      k]) is int:  # for backward compatibility.  d was sth like {'word':1}.  The value d[k] is not a list of dates, but a number representing how frequent this word had been added to the new word book.
             freq = d[k]
-            lst = freq*['2021082019'] # why choose this date?  No particular reasons.  I fix the bug in this date.
+            lst = freq * ['2021082019']  # why choose this date?  No particular reasons.  I fix the bug in this date.
 
         for time_info in lst:
-            date = time_info[:10] # until hour
+            date = time_info[:10]  # until hour
             if not date in d2:
                 d2[date] = [k]
             else:
@@ -76,42 +86,43 @@ def revert_dict(d):
 
 
 def user_difficulty_level(d_user, d):
-    d_user2 = revert_dict(d_user) # key is date, and value is a list of words added in that date
+    d_user2 = revert_dict(d_user)  # key is date, and value is a list of words added in that date
     count = 0
     geometric = 1
-    for date in sorted(d_user2.keys(), reverse=True): # most recently added words are more important while determining user's level
-        lst = d_user2[date] # a list of words
-        lst2 = [] # a list of tuples, (word, difficulty level)
-        for  word in lst:
+    for date in sorted(d_user2.keys(),
+                       reverse=True):  # most recently added words are more important while determining user's level
+        lst = d_user2[date]  # a list of words
+        lst2 = []  # a list of tuples, (word, difficulty level)
+        for word in lst:
             if word in d:
                 lst2.append((word, d[word]))
 
-        lst3 = sort_in_ascending_order(lst2) # easiest tuple first
-        #print(lst3)
+        lst3 = sort_in_ascending_order(lst2)  # easiest tuple first
+        # print(lst3)
         for t in lst3:
             word = t[0]
             hard = t[1]
-            #print('WORD %s HARD %4.2f' % (word, hard))
+            # print('WORD %s HARD %4.2f' % (word, hard))
             geometric = geometric * (hard)
             count += 1
             if count >= 10:
-                return geometric**(1/count)
+                return geometric ** (1 / count)
 
-    return geometric**(1/max(count,1))
+    return geometric ** (1 / max(count, 1))
 
 
 def text_difficulty_level(s, d):
     s = remove_punctuation(s)
     L = freq(s)
 
-    lst = [] # a list of tuples, each tuple being (word, difficulty level)
+    lst = []  # a list of tuples, each tuple being (word, difficulty level)
     for x in L:
         word = x[0]
         if word in d:
             lst.append((word, d[word]))
 
-    lst2 = sort_in_descending_order(lst) # most difficult words on top
-    #print(lst2)
+    lst2 = sort_in_descending_order(lst)  # most difficult words on top
+    # print(lst2)
     count = 0
     geometric = 1
     for t in lst2:
@@ -119,24 +130,20 @@ def text_difficulty_level(s, d):
         hard = t[1]
         geometric = geometric * (hard)
         count += 1
-        if count >= 20: # we look for n most difficult words
-            return geometric**(1/count)
-        
-    return geometric**(1/max(count,1))
+        if count >= 20:  # we look for n most difficult words
+            return geometric ** (1 / count)
 
+    return geometric ** (1 / max(count, 1))
 
 
 if __name__ == '__main__':
-
-
     d1 = load_record('frequency.p')
-    #print(d1)
+    # print(d1)
 
     d2 = load_record('words_and_tests.p')
-    #print(d2)
+    # print(d2)
 
-
-    d3 = get_difficulty_level(d1, d2)
+    d3 = get_difficulty_level_for_user(d1, d2)
 
     s = '''
 South Lawn
@@ -197,7 +204,6 @@ Amidst the aftermath of this shocking referendum vote, there is great uncertaint
 
 '''
 
-
     s = '''
 British Prime Minister Boris Johnson walks towards a voting station during the Brexit referendum in Britain, June 23, 2016. (Photo: EPA-EFE)
 
@@ -218,7 +224,6 @@ The prime minister was forced to ask for an extension to Britain's EU departure 
 Johnson has repeatedly pledged to finalize the first stage, a transition deal, of Britain's EU divorce battle by Oct. 31. A second stage will involve negotiating its future relationship with the EU on trade, security and other salient issues.
 '''
 
-
     s = '''
 Thank you very much. We have a Cabinet meeting. We’ll have a few questions after grace. And, if you would, Ben, please do the honors.
 
@@ -233,17 +238,11 @@ We need — for our farmers, our manufacturers, for, frankly, unions and non-uni
 
 '''
 
-
-
-
-    #f = open('bbc-fulltext/bbc/entertainment/001.txt')
+    # f = open('bbc-fulltext/bbc/entertainment/001.txt')
     f = open('wordlist.txt')
     s = f.read()
     f.close()
 
-
-
-    
     print(text_difficulty_level(s, d3))
 
-            
+
