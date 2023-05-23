@@ -48,6 +48,7 @@ def get_difficulty_level_for_user(d1, d2):
     d1 用户不会的词
     在d2的后面添加单词，没有新建一个新的字典
     """
+    # TODO: convert_test_type_to_difficulty_level() should not be called every time.  Each word's difficulty level should be pre-computed.
     d2 = convert_test_type_to_difficulty_level(d2)  # 根据d2的标记评级{'apple': 4, 'abandon': 4, ...}
     stemmer = snowballstemmer.stemmer('english')
 
