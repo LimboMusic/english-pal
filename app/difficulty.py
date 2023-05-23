@@ -56,7 +56,6 @@ def get_difficulty_level_for_user(d1, d2):
             continue  # 无需评级，跳过
         elif stem.stemWord(k) in d2:  # 如果用户的词的词根存在于词库d2的词根库中
             d2[k] = d2[stem.stemWord(k)]  # 按照词根进行评级
-            break
         else:
             d2[k] = 3  # 如果k的词根都不在，那么就当认为是3级
     return d2
