@@ -118,9 +118,10 @@ def text_difficulty_level(s, d):
     L = freq(s)
 
     lst = []  # a list of tuples, each tuple being (word, difficulty level)
+    stop_words = {'the':1, 'and':1, 'of':1, 'to':1, 'what':1, 'in':1, 'there':1, 'when':1, 'them':1, 'would':1, 'will':1, 'out':1, 'his':1, 'mr':1, 'that':1, 'up':1, 'more':1, 'your':1, 'it':1, 'now':1, 'very':1, 'then':1, 'could':1, 'he':1, 'any':1, 'some':1, 'with':1, 'into':1, 'you':1, 'our':1, 'man':1, 'other':1, 'time':1, 'was':1, 'than':1, 'know':1, 'about':1, 'only':1, 'like':1, 'how':1, 'see':1, 'is':1, 'before':1, 'such':1, 'little':1, 'two':1, 'its':1, 'as':1, 'these':1, 'may':1, 'much':1, 'down':1, 'for':1, 'well':1, 'should':1, 'those':1, 'after':1, 'same':1, 'must':1, 'say':1, 'first':1, 'again':1, 'us':1, 'great':1, 'where':1, 'being':1, 'come':1, 'over':1, 'good':1, 'himself':1, 'am':1, 'never':1, 'on':1, 'old':1, 'here':1, 'way':1, 'at':1, 'go':1, 'upon':1, 'have':1, 'had':1, 'without':1, 'my':1, 'day':1, 'be':1, 'but':1, 'though':1, 'from':1, 'not':1, 'too':1, 'another':1, 'this':1, 'even':1, 'still':1, 'her':1, 'yet':1, 'under':1, 'by':1, 'let':1, 'just':1, 'all':1, 'because':1, 'we':1, 'always':1, 'off':1, 'yes':1, 'so':1, 'while':1, 'why':1, 'which':1, 'me':1, 'are':1, 'or':1, 'no':1, 'if':1, 'an':1, 'also':1, 'thus':1, 'who':1, 'cannot':1, 'she':1, 'whether':1} # ignore these words while computing the artile's difficulty level
     for x in L:
         word = x[0]
-        if word in d:
+        if word not in stop_words and word in d:
             lst.append((word, d[word]))
 
     lst2 = sort_in_descending_order(lst)  # most difficult words on top
