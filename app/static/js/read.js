@@ -1,4 +1,3 @@
-// read.js
 var Reader = (function() {
     let reader = window.speechSynthesis;
     let current_position = 0;
