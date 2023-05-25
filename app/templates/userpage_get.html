@@ -37,31 +37,31 @@
 <body>
 <div class="container-fluid">
     <p><b>English Pal for <font id="username" color="red">{{ username }}</font></b>
+
         {% if username ==  admin_name %}
         <a class="btn btn-secondary" href="/admin" role="button" onclick="stopRead()">管理</a>
         {% endif %}
-        <a class="btn btn-secondary" href="/logout" role="button" onclick="stopRead()">退出</a>
+        <a id="quit" class="btn btn-secondary" href="/logout" role="button" onclick="stopRead()">退出</a>
         <a class="btn btn-secondary" href="/reset" role="button" onclick="stopRead()">重设密码</a>
+
     </p>
 {#    {% for message in flashed_messages %}#} {# 根据user_service.userpage,取消了参数flashed_messages，因此注释了这段代码 #}
 {#        <div class="alert alert-warning" role="alert">Congratulations! {{ message }}</div>#}
 {#    {% endfor %}#}
 
-    <a class="btn btn-success" href="/{{ username }}/reset" role="button"> 下一篇 Next Article </a>
-    {% if session.get('existing_articles') != None and session.get('existing_articles')["index"] !=0 %}
-        <a class="btn btn-success" href="/{{ username }}/back" role="button"> 上一篇 Previous Article </a>
-    {% endif %}
+        <button class="btn btn-success" id="load_next_article" onclick="load_next_article()"> 下一篇 Next Article </button>
+        <button class="btn btn-success" id="load_pre_article" onclick="load_pre_article()" > 上一篇 Previous Article </button>
 
     <p><b>阅读文章并回答问题</b></p>
     <div id="text-content">
-        {% if today_article %}
-            <div class="alert alert-success" role="alert">According to your word list, your level is <span class="badge bg-success">{{ today_article["user_level"] }}</span>  and we have chosen an article with a difficulty level of <span class="badge bg-success">{{ today_article["text_level"] }}</span> for you.</div>
-                <p class="text-muted">Article added on: {{ today_article["date"] }}</p><br/>
+        <div id="found">
+            <div class="alert alert-success" role="alert">According to your word list, your level is <span class="badge bg-success" id="user-level">{{ today_article["user_level"] }}</span>  and we have chosen an article with a difficulty level of <span class="badge bg-success" id="text_level">{{ today_article["text_level"] }}</span> for you.</div>
+                <p class="text-muted" id="date">Article added on: {{ today_article["date"] }}</p><br/>
             <div class="p-3 mb-2 bg-light text-dark"><br/>
-            <p class="display-5">{{ today_article["article_title"] }}</p><br/>
+            <p class="display-5" id="article_title">{{ today_article["article_title"] }}</p><br/>
             <p class="lead"><font id="article" size=2>{{ today_article["article_body"] }}</font></p><br/>
-            <p><small class="text-muted">{{ today_article['source'] }}</small></p><br/>
-            <p><b>{{ today_article['question'] }}</b></p><br/>
+            <p><small class="text-muted" id="source">{{ today_article['source'] }}</small></p><br/>
+            <p><b id="question">{{ today_article['question'] }}</b></p><br/>
                 <script type="text/javascript">
                     function toggle_visibility(id) { {# https://css-tricks.com/snippets/javascript/showhide-element/#}
                         const e = document.getElementById(id);
@@ -74,11 +74,13 @@
                 <button onclick="toggle_visibility('answer');">ANSWER</button>
                 <div id="answer" style="display:none;">{{ today_article['answer'] }}</div><br/>
             </div>
-        {% else %}
-            <div class="alert alert-success" role="alert">
-                <p class="text-muted"><span class="badge bg-success">Notes:</span><br>No article is currently available for you. You can try again a few times or mark new words in the passage to improve your level.</p>
-            </div>
-        {% endif %}
+        </div>
+        <div class="alert alert-success" role="alert" id="not_found" style="display:none;">
+            <p class="text-muted"><span class="badge bg-success">Notes:</span><br>No article is currently available for you. You can try again a few times or mark new words in the passage to improve your level.</p>
+        </div>
+        <div class="alert alert-success" role="alert" id="read_all" style="display:none;">
+            <p class="text-muted"><span class="badge bg-success">Notes:</span><br>You've read all the articles.</p>
+        </div>
     </div>
 
     <input type="checkbox" onclick="toggleHighlighting()" checked/>生词高亮
@@ -93,7 +95,7 @@
         </div>
     </div>
     <p><b>收集生词吧</b> （可以在正文中划词，也可以复制黏贴）</p>
-    <form method="post" action="/{{ username }}">
+    <form method="post" action="/{{ username }}/userpage">
         <textarea name="content" id="selected-words" rows="10" cols="120"></textarea><br/>
         <input type="submit" value="把生词加入我的生词库"/>
         <input type="reset" value="清除"/>
@@ -144,6 +146,67 @@
         <script src="{{ js }}"></script>
     {% endfor %}
 {% endif %}
+<script type="text/javascript">
+    function load_next_article(){
+        $.ajax({
+            url: '/get_next_article/{{username}}',
+            dataType: 'json',
+            success: function(data) {
+                // 更新页面内容
+                if(data['today_article']){
+                    update(data['today_article']);
+                    check_pre(data['visited_articles']);
+                    check_next(data['result_of_generate_article']);
+                }
+            }
+        });
+    }
+    function load_pre_article(){
+        $.ajax({
+            url: '/get_pre_article/{{username}}',
+            dataType: 'json',
+            success: function(data) {
+                // 更新页面内容
+                if(data['today_article']){
+                    update(data['today_article']);
+                    check_pre(data['visited_articles']);
+                }
+            }
+        });
+    }
+    function update(today_article){
+        $('#user-level').html(today_article['user_level']);
+        $('#text_level').html(today_article["text_level"]);
+        $('#date').html('Article added on: '+today_article["date"]);
+        $('#article_title').html(today_article["article_title"]);
+        $('#article').html(today_article["article_body"]);
+        $('#source').html(today_article['source']);
+        $('#question').html(today_article["question"]);
+        $('#answer').html(today_article["answer"]);
+    }
+<!-- 检查是否存在上一篇或下一篇，不存在则对应按钮隐藏-->
+    function check_pre(visited_articles){
+        if((visited_articles=='')||(visited_articles['index']<=0)){
+            $('#load_pre_article').hide();
+        }else{
+            $('#load_pre_article').show();
+        }
+    }
+    function check_next(result_of_generate_article){
+        if(result_of_generate_article == "found"){
+            $('#found').show();$('#not_found').hide();
+            $('#read_all').hide();
+        }else if(result_of_generate_article == "not found"){
+            $('#found').hide();
+            $('#not_found').show();
+            $('#read_all').hide();
+        }else{
+            $('#found').hide();
+            $('#not_found').hide();
+            $('#read_all').show();
+        }
+    }
+</script>
 </body>
 <style>
     mark {

@@ -21,36 +21,46 @@ userService = Blueprint("user_bp", __name__)
 path_prefix = '/var/www/wordfreq/wordfreq/'
 path_prefix = './'  # comment this line in deployment
 
-
-@userService.route("/<username>/reset", methods=['GET', 'POST'])
-def user_reset(username):
-    '''
-    用户界面
-    :param username: 用户名
-    :return: 返回页面内容
-    '''
+@userService.route("/get_next_article/<username>",methods=['GET','POST'])
+def get_next_article(username):
+    user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
+    session['old_articleID'] = session.get('articleID')
     if request.method == 'GET':
-        existing_articles = session.get("existing_articles")
-        existing_articles["index"] += 1
-        session["existing_articles"] = existing_articles
-        return redirect(url_for('user_bp.userpage', username=username))
+        visited_articles = session.get("visited_articles")
+        if visited_articles['article_ids'][-1] == "null":  # 如果当前还是“null”，则将“null”pop出来,无需index+=1
+            visited_articles['article_ids'].pop()
+        else:  # 当前不为“null”，直接 index+=1
+            visited_articles["index"] += 1
+        session["visited_articles"] = visited_articles
+        visited_articles, today_article, result_of_generate_article = get_today_article(user_freq_record, session.get('visited_articles'))
+        data = {
+            'visited_articles': visited_articles,
+            'today_article': today_article,
+            'result_of_generate_article': result_of_generate_article
+        }
     else:
         return 'Under construction'
+    return json.dumps(data)
 
-@userService.route("/<username>/back", methods=['GET'])
-def user_back(username):
-    '''
-    用户界面
-    :param username: 用户名
-    :return: 返回页面内容
-    '''
+@userService.route("/get_pre_article/<username>",methods=['GET'])
+def get_pre_article(username):
+    user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
     if request.method == 'GET':
-        existing_articles = session.get("existing_articles")
-        existing_articles["index"] -= 1
-        session["existing_articles"] = existing_articles
-        return redirect(url_for('user_bp.userpage', username=username))
-
-
+        visited_articles = session.get("visited_articles")
+        if(visited_articles["index"]==0):
+            data=''
+        else:
+            visited_articles["index"] -= 1  # 上一篇，index-=1
+            if visited_articles['article_ids'][-1] == "null":  # 如果当前还是“null”，则将“null”pop出来
+                visited_articles['article_ids'].pop()
+            session["visited_articles"] = visited_articles
+            visited_articles, today_article, result_of_generate_article = get_today_article(user_freq_record, session.get('visited_articles'))
+            data = {
+                'visited_articles': visited_articles,
+                'today_article': today_article,
+                'result_of_generate_article':result_of_generate_article
+            }
+        return json.dumps(data)
 
 @userService.route("/<username>/<word>/unfamiliar", methods=['GET', 'POST'])
 def unfamiliar(username, word):
@@ -97,7 +107,7 @@ def deleteword(username, word):
     return "success"
 
 
-@userService.route("/<username>", methods=['GET', 'POST'])
+@userService.route("/<username>/userpage", methods=['GET', 'POST'])
 def userpage(username):
     '''
     用户界面
@@ -134,8 +144,8 @@ def userpage(username):
         words = ''
         for x in lst3:
             words += x[0] + ' '
-        existing_articles, today_article = get_today_article(user_freq_record, session.get('existing_articles'))
-        session['existing_articles'] = existing_articles
+        visited_articles, today_article, result_of_generate_article = get_today_article(user_freq_record, session.get('visited_articles'))
+        session['visited_articles'] = visited_articles
         # 通过 today_article，加载前端的显示页面
         return render_template('userpage_get.html',
                                admin_name=ADMIN_NAME,
@@ -143,14 +153,11 @@ def userpage(username):
                                session=session,
                                # flashed_messages=get_flashed_messages(), 仅有删除单词的时候使用到flash，而删除单词是异步执行，这里的信息提示是同步执行，所以就没有存在的必要了
                                today_article=today_article,
+                               result_of_generate_article=result_of_generate_article,
                                d_len=len(d),
                                lst3=lst3,
                                yml=Yaml.yml,
                                words=words)
-
-
-
-
 
 @userService.route("/<username>/mark", methods=['GET', 'POST'])
 def user_mark_word(username):
