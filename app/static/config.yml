@@ -7,7 +7,9 @@ css:
 js:
   head: # 在页面加载之前加载
     - static/js/jquery.js
+    - static/js/read.js
     - static/js/word_operation.js
+
   bottom: # 在页面加载完之后加载
     - static/js/fillword.js
     - static/js/highlight.js
