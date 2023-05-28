@@ -70,7 +70,7 @@ def sort_in_ascending_order(lst):# 单词按频率降序排列
     return lst2
 
 
-def make_html_page(lst, fname):
+def make_html_page(lst, fname):  # 只是在wordfreqCMD.py中的main函数中调用，所以不做修改
     '''
     功能：把lst的信息存到fname中，以html格式。
     '''

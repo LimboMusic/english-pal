@@ -1,27 +1,46 @@
 {% block body %}
 {% if session['logged_in'] %}
 
-You're logged in already!
+你已登录 <a href="/{{ session['username'] }}">{{ session['username'] }}</a>。 登出点击<a href="/logout">这里</a>。
 
 {% else %}
 <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3.0, user-scalable=yes" />
 <link rel="stylesheet" href="static/css/login_service.css">
-
+<script src="static/js/jquery.js"></script>
+<script>
+    function login(){
+        let username = $("#username").val();
+        let password = $("#password").val();
+        if (username === "" || password === ""){
+            alert('输入不能为空!');
+            return false;
+        }
+        $.post(
+            "/login", {'username': username, 'password': password},
+            function (response) {
+                if (response.status === '0') {
+                    alert('无法通过验证。');
+                    window.location.href = "/login";
+                } else if (response.status === '1') {
+                    window.location.href = "/"+username+"/userpage";
+                }
+            }
+        )
+        return false;
+    }
+</script>
 <div class="container">
 
   <section class="signin-heading">
     <h1>Sign In</h1>
   </section>
 
-  <form action="/login" method="POST">
-    <input type="text" placeholder="用户名" class="username" name="username" required>
-    <input type="password" placeholder="密码" class="password"  name="password" required>
-    <button type="submit" class="btn">登录</button>
-  </form>
+  <input type="text" placeholder="用户名" class="username" id="username">
+  <input type="password" placeholder="密码" class="password"  id="password">
+  <button type="button" class="btn" onclick="login()">登录</button>
+  <a class="signup" href="/signup">注册</a>
 
 </div>
-
-<a href="/signup" class="signup">注册</a>
 
 {% endif %}
 {% endblock %}

@@ -19,21 +19,15 @@ def signup():
         # POST方法需判断是否注册成功，再根据结果返回不同的内容
         username = escape(request.form['username'])
         password = escape(request.form['password'])
-        password2 = escape(request.form['password2'])
         
         #! 添加如下代码为了过滤注册时的非法字符
         warn = WarningMessage(username)
         if str(warn) != 'OK':
-            return str(warn)
+            return jsonify({'status': '3', 'warn': str(warn)})
         
         available = check_username_availability(username)
         if not available: # 用户名不可用
-            flash('用户名 %s 已经被注册。' % (username))
-            return render_template('signup.html')
-        elif len(password.strip()) < 4: # 密码过短
-            return '密码过于简单。'
-        elif password != password2:
-            return '确认密码与输入密码不一致！'
+            return jsonify({'status': '0'})
         else: # 添加账户信息
             add_user(username, password)
             verified = verify_user(username, password)
@@ -43,11 +37,10 @@ def signup():
                 session[username] = username
                 session['username'] = username
                 session['expiry_date'] = get_expiry_date(username)
-                session['articleID'] = None
-                return '<p>恭喜，你已成功注册， 你的用户名是 <a href="%s">%s</a>。</p>\
-                <p><a href="/%s">开始使用</a> <a href="/">返回首页</a><p/>' % (username, username, username)
+                session['visited_articles'] = None
+                return jsonify({'status': '2'})
             else:
-                return '用户名密码验证失败。'
+                return jsonify({'status': '1'})
 
 
 
@@ -59,13 +52,7 @@ def login():
     '''
     if request.method == 'GET':
         # GET请求
-        if not session.get('logged_in'):
-            # 未登录，返回登录页面
-            return render_template('login.html')
-        else:
-            # 已登录，提示信息并显示登出按钮
-            return '你已登录 <a href="/%s">%s</a>。 登出点击<a href="/logout">这里</a>。' % (
-                session['username'], session['username'])
+        return render_template('login.html')
     elif request.method == 'POST':
         # POST方法用于判断登录是否成功
         # check database and verify user
@@ -79,10 +66,10 @@ def login():
             session['username'] = username
             user_expiry_date = get_expiry_date(username)
             session['expiry_date'] = user_expiry_date
-            session['articleID'] = None
-            return redirect(url_for('user_bp.userpage', username=username))
+            session['visited_articles'] = None
+            return jsonify({'status': '1'})
         else:
-            return '无法通过验证。'
+            return jsonify({'status': '0'})
 
 
 @accountService.route("/logout", methods=['GET', 'POST'])
@@ -115,31 +102,9 @@ def reset():
         # POST请求用于提交修改后信息
         old_password = escape(request.form['old-password'])
         new_password = escape(request.form['new-password'])
-
-        re_new_password = escape(request.form['re-new-password'])  # 确认新密码
-        if re_new_password != new_password: #验证新密码两次输入是否相同
-            return '新密码不匹配，请重新输入'
-        if len(new_password) < 4: #验证新密码长度，原则参照注册模块
-            return '密码过于简单。(密码长度至少4位)'
-
         flag = change_password(username, old_password, new_password) # flag表示是否修改成功
         if flag:
             session['logged_in'] = False
-            return \
-'''
-<script>
-alert('密码修改成功，请重新登录。');
-window.location.href="/login";
-</script>
-
-'''
-
+            return jsonify({'status':'1'})  # 修改成功
         else:
-            return \
-'''
-<script>
-alert('密码修改失败');
-window.location.href="/reset";
-</script>
-
-'''
+            return jsonify({'status':'2'})  # 修改失败

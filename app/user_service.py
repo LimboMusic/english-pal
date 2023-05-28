@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from admin_service import ADMIN_NAME
 from flask import *
 
 # from app import Yaml
@@ -21,33 +21,46 @@ userService = Blueprint("user_bp", __name__)
 path_prefix = '/var/www/wordfreq/wordfreq/'
 path_prefix = './'  # comment this line in deployment
 
-
-@userService.route("/<username>/reset", methods=['GET', 'POST'])
-def user_reset(username):
-    '''
-    用户界面
-    :param username: 用户名
-    :return: 返回页面内容
-    '''
+@userService.route("/get_next_article/<username>",methods=['GET','POST'])
+def get_next_article(username):
+    user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
     session['old_articleID'] = session.get('articleID')
     if request.method == 'GET':
-        session['articleID'] = None
-        return redirect(url_for('user_bp.userpage', username=username))
+        visited_articles = session.get("visited_articles")
+        if visited_articles['article_ids'][-1] == "null":  # 如果当前还是“null”，则将“null”pop出来,无需index+=1
+            visited_articles['article_ids'].pop()
+        else:  # 当前不为“null”，直接 index+=1
+            visited_articles["index"] += 1
+        session["visited_articles"] = visited_articles
+        visited_articles, today_article, result_of_generate_article = get_today_article(user_freq_record, session.get('visited_articles'))
+        data = {
+            'visited_articles': visited_articles,
+            'today_article': today_article,
+            'result_of_generate_article': result_of_generate_article
+        }
     else:
         return 'Under construction'
+    return json.dumps(data)
 
-@userService.route("/<username>/back", methods=['GET'])
-def user_back(username):
-    '''
-    用户界面
-    :param username: 用户名
-    :return: 返回页面内容
-    '''
+@userService.route("/get_pre_article/<username>",methods=['GET'])
+def get_pre_article(username):
+    user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
     if request.method == 'GET':
-        session['articleID'] = session.get('old_articleID')
-        return redirect(url_for('user_bp.userpage', username=username))
-
-
+        visited_articles = session.get("visited_articles")
+        if(visited_articles["index"]==0):
+            data=''
+        else:
+            visited_articles["index"] -= 1  # 上一篇，index-=1
+            if visited_articles['article_ids'][-1] == "null":  # 如果当前还是“null”，则将“null”pop出来
+                visited_articles['article_ids'].pop()
+            session["visited_articles"] = visited_articles
+            visited_articles, today_article, result_of_generate_article = get_today_article(user_freq_record, session.get('visited_articles'))
+            data = {
+                'visited_articles': visited_articles,
+                'today_article': today_article,
+                'result_of_generate_article':result_of_generate_article
+            }
+        return json.dumps(data)
 
 @userService.route("/<username>/<word>/unfamiliar", methods=['GET', 'POST'])
 def unfamiliar(username, word):
@@ -89,11 +102,12 @@ def deleteword(username, word):
     '''
     user_freq_record = path_prefix + 'static/frequency/' + 'frequency_%s.pickle' % (username)
     pickle_idea2.deleteRecord(user_freq_record, word)
-    flash(f'<strong>{word}</strong> is no longer in your word list.')
+    # 模板userpage_get.html中删除单词是异步执行，而flash的信息后续是同步执行的，所以注释这段代码；同时如果这里使用flash但不提取信息，则会影响 signup.html的显示。bug复现：删除单词后，点击退出，点击注册，注册页面就会出现提示信息
+    # flash(f'{word} is no longer in your word list.')
     return "success"
 
 
-@userService.route("/<username>", methods=['GET', 'POST'])
+@userService.route("/<username>/userpage", methods=['GET', 'POST'])
 def userpage(username):
     '''
     用户界面
@@ -130,19 +144,20 @@ def userpage(username):
         words = ''
         for x in lst3:
             words += x[0] + ' '
+        visited_articles, today_article, result_of_generate_article = get_today_article(user_freq_record, session.get('visited_articles'))
+        session['visited_articles'] = visited_articles
+        # 通过 today_article，加载前端的显示页面
         return render_template('userpage_get.html',
+                               admin_name=ADMIN_NAME,
                                username=username,
                                session=session,
-                               flashed_messages=get_flashed_messages_if_any(),
-                               today_article=get_today_article(user_freq_record, session['articleID']),
+                               # flashed_messages=get_flashed_messages(), 仅有删除单词的时候使用到flash，而删除单词是异步执行，这里的信息提示是同步执行，所以就没有存在的必要了
+                               today_article=today_article,
+                               result_of_generate_article=result_of_generate_article,
                                d_len=len(d),
                                lst3=lst3,
                                yml=Yaml.yml,
                                words=words)
-
-
-
-
 
 @userService.route("/<username>/mark", methods=['GET', 'POST'])
 def user_mark_word(username):
@@ -173,15 +188,3 @@ def get_time():
     '''
     return datetime.now().strftime('%Y%m%d%H%M')  # upper to minutes
 
-def get_flashed_messages_if_any():
-    '''
-    在用户界面显示黄色提示信息
-    :return: 包含HTML标签的提示信息
-    '''
-    messages = get_flashed_messages()
-    s = ''
-    for message in messages:
-        s += '<div class="alert alert-warning" role="alert">'
-        s += f'Congratulations! {message}'
-        s += '</div>'
-    return s
