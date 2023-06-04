@@ -7,7 +7,7 @@ import random, glob
 import hashlib
 from datetime import datetime
 from flask import Flask, request, redirect, render_template, url_for, session, abort, flash, get_flashed_messages
-from difficulty import get_difficulty_level, text_difficulty_level, user_difficulty_level
+from difficulty import get_difficulty_level_for_user, text_difficulty_level, user_difficulty_level
 
 
 path_prefix = '/var/www/wordfreq/wordfreq/'
@@ -32,12 +32,20 @@ def get_article_body(s):
     return '\n'.join(lst)
 
 
-def get_today_article(user_word_list, articleID):
+def get_today_article(user_word_list, visited_articles):
     rq = RecordQuery(path_prefix + 'static/wordfreqapp.db')
-    if articleID == None:
+    if visited_articles is None:
+        visited_articles = {
+            "index" : 0,  # 为 article_ids 的索引
+            "article_ids": []  # 之前显示文章的id列表，越后越新
+        }
+    if visited_articles["index"] > len(visited_articles["article_ids"])-1:  # 生成新的文章，因此查找所有的文章
         rq.instructions("SELECT * FROM article")
-    else:
-        rq.instructions('SELECT * FROM article WHERE article_id=%d' % (articleID))
+    else:  # 生成阅读过的文章，因此查询指定 article_id 的文章
+        if visited_articles["article_ids"][visited_articles["index"]] == 'null':  # 可能因为直接刷新页面导致直接去查询了'null'，因此当刷新的页面的时候，需要直接进行“上一篇”操作
+            visited_articles["index"] -= 1
+            visited_articles["article_ids"].pop()
+        rq.instructions('SELECT * FROM article WHERE article_id=%d' % (visited_articles["article_ids"][visited_articles["index"]]))
     rq.do()
     result = rq.get_results()
     random.shuffle(result)
@@ -45,38 +53,51 @@ def get_today_article(user_word_list, articleID):
     # Choose article according to reader's level
     d1 = load_freq_history(path_prefix + 'static/frequency/frequency.p')
     d2 = load_freq_history(path_prefix + 'static/words_and_tests.p')
-    d3 = get_difficulty_level(d1, d2)
+    d3 = get_difficulty_level_for_user(d1, d2)
 
-    d = {}
+    d = None
+    result_of_generate_article = "not found"
     d_user = load_freq_history(user_word_list)
     user_level = user_difficulty_level(d_user, d3)  # more consideration as user's behaviour is dynamic. Time factor should be considered.
-    random.shuffle(result)  # shuffle list
-    d = random.choice(result)
-    text_level = text_difficulty_level(d['text'], d3)
-    if articleID == None:
-        for reading in result:
-            text_level = text_difficulty_level(reading['text'], d3)
-            factor = random.gauss(0.8,
-                                  0.1)  # a number drawn from Gaussian distribution with a mean of 0.8 and a stand deviation of 1
-            if within_range(text_level, user_level, (8.0 - user_level) * factor):
-                d = reading
-                break
+    text_level = 0
+    if visited_articles["index"] > len(visited_articles["article_ids"])-1:  # 生成新的文章
+        amount_of_visited_articles = len(visited_articles["article_ids"])
+        amount_of_existing_articles = result.__len__()
+        if amount_of_visited_articles == amount_of_existing_articles:  # 如果当前阅读过的文章的数量 == 存在的文章的数量，即所有的书本都阅读过了
+            result_of_generate_article = "had read all articles"
+        else:
+            for k in range(3):  # 最多尝试3次
+                for reading in result:
+                    text_level = text_difficulty_level(reading['text'], d3)
+                    factor = random.gauss(0.8, 0.1)  # a number drawn from Gaussian distribution with a mean of 0.8 and a stand deviation of 1
+                    if reading['article_id'] not in visited_articles["article_ids"] and within_range(text_level, user_level, (8.0 - user_level) * factor):  # 新的文章之前没有出现过且符合一定范围的水平
+                        d = reading
+                        visited_articles["article_ids"].append(d['article_id'])  # 列表添加新的文章id；下面进行
+                        result_of_generate_article = "found"
+                        break
+                if result_of_generate_article == "found":  # 用于成功找到文章后及时退出外层循环
+                    break
+        if result_of_generate_article != "found":  # 阅读完所有文章，或者循环3次没有找到适合的文章，则放入空（“null”）
+            visited_articles["article_ids"].append('null')
+    else:  # 生成已经阅读过的文章
+        d = random.choice(result)
+        text_level = text_difficulty_level(d['text'], d3)
+        result_of_generate_article = "found"
 
-    s = '<div class="alert alert-success" role="alert">According to your word list, your level is <span class="badge bg-success">%4.2f</span>  and we have chosen an article with a difficulty level of <span class="badge bg-success">%4.2f</span> for you.</div>' % (
-        user_level, text_level)
-    s += '<p class="text-muted">Article added on: %s</p>' % (d['date'])
-    s += '<div class="p-3 mb-2 bg-light text-dark">'
-    article_title = get_article_title(d['text'])
-    article_body = get_article_body(d['text'])
-    s += '<p class="display-5">%s</p>' % (article_title)
-    s += '<p class="lead"><font id="article" size=2>%s</font></p>' % (article_body)
-    s += '<p><small class="text-muted">%s</small></p>' % (d['source'])
-    s += '<p><b>%s</b></p>' % (get_question_part(d['question']))
-    s = s.replace('\n', '<br/>')
-    s += '%s' % (get_answer_part(d['question']))
-    s += '</div>'
-    session['articleID'] = d['article_id']
-    return s
+    today_article = None
+    if d:
+        today_article = {
+            "user_level": '%4.2f' % user_level,
+            "text_level": '%4.2f' % text_level,
+            "date": d['date'],
+            "article_title": get_article_title(d['text']),
+            "article_body": get_article_body(d['text']),
+            "source": d["source"],
+            "question": get_question_part(d['question']),
+            "answer": get_answer_part(d['question'])
+        }
+
+    return visited_articles, today_article, result_of_generate_article
 
 
 def load_freq_history(path):
@@ -116,21 +137,4 @@ def get_answer_part(s):
             flag = 1
         elif flag == 1:
             result.append(line)
-    # https://css-tricks.com/snippets/javascript/showhide-element/
-    js = '''
-<script type="text/javascript">
-
-    function toggle_visibility(id) {
-       var e = document.getElementById(id);
-       if(e.style.display == 'block')
-          e.style.display = 'none';
-       else
-          e.style.display = 'block';
-    }
-</script>
-    '''
-    html_code = js
-    html_code += '\n'
-    html_code += '<button onclick="toggle_visibility(\'answer\');">ANSWER</button>\n'
-    html_code += '<div id="answer" style="display:none;">%s</div>\n' % ('\n'.join(result))
-    return html_code
+    return '\n'.join(result)

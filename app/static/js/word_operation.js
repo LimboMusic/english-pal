@@ -62,6 +62,13 @@ function delete_word(theWord) {
     });
 }
 
+function read_word(theWord) {
+    let to_speak = $("#word_" + theWord).text();
+    original_position = 0;
+    current_position = 0;
+    Reader.read(to_speak, inputSlider.value);
+}
+
 /* 
  * interface Word {
  *   word: string,
@@ -95,6 +102,7 @@ function wordTemplate(word) {
         <a class="btn btn-success" onclick="familiar('${word.word}')" role="button">熟悉</a>
         <a class="btn btn-warning" onclick="unfamiliar('${word.word}')" role="button">不熟悉</a>
         <a class="btn btn-danger" onclick="delete_word('${word.word}')" role="button">删除</a>
+        <a class="btn btn-info" onclick="read_word('${word.word}')" role="button">朗读</a>
     </p>`;
 }
 
